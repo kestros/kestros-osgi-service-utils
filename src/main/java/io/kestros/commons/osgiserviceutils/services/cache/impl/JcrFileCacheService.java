@@ -68,8 +68,8 @@ public abstract class JcrFileCacheService extends BaseCacheService {
     return this.serviceResourceResolver;
   }
 
-  protected void createCacheFile(final String content, final String relativePath, final FileType type)
-      throws CacheBuilderException {
+  protected void createCacheFile(final String content, final String relativePath,
+      final FileType type) throws CacheBuilderException {
     final String parentPath = getParentPathFromPath(getServiceCacheRootPath() + relativePath);
     final String newFileName = relativePath.split("/")[relativePath.split("/").length - 1];
 
@@ -103,8 +103,8 @@ public abstract class JcrFileCacheService extends BaseCacheService {
   protected <T extends BaseFile> T getCachedFile(final String path, final Class<T> type)
       throws ResourceNotFoundException, InvalidResourceTypeException {
     if (getServiceResourceResolver() != null) {
-      final BaseResource cachedFileResource = getResourceAsBaseResource(getServiceCacheRootPath() + path,
-          getServiceResourceResolver());
+      final BaseResource cachedFileResource = getResourceAsBaseResource(
+          getServiceCacheRootPath() + path, getServiceResourceResolver());
       return adaptToFileType(cachedFileResource, type);
     }
     throw new ResourceNotFoundException("No service resolver to retrieve cached file.");
@@ -121,7 +121,8 @@ public abstract class JcrFileCacheService extends BaseCacheService {
   @Override
   protected void doPurge(final ResourceResolver resourceResolver) throws CachePurgeException {
     log.info("{} purging cache.", getClass().getSimpleName());
-    final Resource serviceCacheRootResource = resourceResolver.getResource(getServiceCacheRootPath());
+    final Resource serviceCacheRootResource = resourceResolver.getResource(
+        getServiceCacheRootPath());
     if (serviceCacheRootResource != null) {
 
       for (final BaseResource cacheRootChild : SlingModelUtils.getChildrenAsBaseResource(
