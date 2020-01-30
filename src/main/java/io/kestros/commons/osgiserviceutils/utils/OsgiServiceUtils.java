@@ -1,5 +1,6 @@
 package io.kestros.commons.osgiserviceutils.utils;
 
+import io.kestros.commons.osgiserviceutils.exceptions.OsgiServiceTrackingException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -95,36 +96,55 @@ public class OsgiServiceUtils {
     }
   }
 
+  /**
+   * Retrieves all Services which are registered to the specified service class.
+   *
+   * @param componentContext componentContext
+   * @param type Service class to retrieve instances of.
+   * @param <T> Generic type.
+   * @return All Services which are registered to the specified service class.
+   * @throws OsgiServiceTrackingException Failed to build service tracker.
+   */
   public static <T> List<T> getAllOsgiServicesOfType(ComponentContext componentContext,
-      Class<T> type) {
-    List<T> osgiServices = new ArrayList<>();
+      Class<T> type) throws OsgiServiceTrackingException {
     ServiceTracker serviceTracker = new ServiceTracker(componentContext.getBundleContext(), type,
         null);
-    serviceTracker.open();
-    Object[] services = serviceTracker.getTracked().values().toArray();
-    if (services != null && services.length != 0) {
-      for (Object service : services) {
-        osgiServices.add((T) service);
-      }
-    } else {
-      LOG.error("Unable to build Service list for type {}", type.getName());
-    }
-    return osgiServices;
+    return getAllOsgiServicesOfType(type.getName(), serviceTracker);
   }
 
+  /**
+   * Retrieves all Services which are registered to the specified service class.
+   *
+   * @param componentContext componentContext
+   * @param serviceClassName Service class name to retrieve instances of.
+   * @param <T> Generic type.
+   * @return All Services which are registered to the specified service class.
+   * @throws OsgiServiceTrackingException Failed to build service tracker.
+   */
   public static <T> List<T> getAllOsgiServicesOfType(ComponentContext componentContext,
-      String serviceClassName) {
-    List<T> osgiServices = new ArrayList<>();
+      String serviceClassName) throws OsgiServiceTrackingException {
     ServiceTracker serviceTracker = new ServiceTracker(componentContext.getBundleContext(),
         serviceClassName, null);
+
+    return getAllOsgiServicesOfType(serviceClassName, serviceTracker);
+  }
+
+  private static <T> List<T> getAllOsgiServicesOfType(String serviceName,
+      ServiceTracker serviceTracker) throws OsgiServiceTrackingException {
     serviceTracker.open();
+    List<T> osgiServices = new ArrayList<>();
     Object[] services = serviceTracker.getTracked().values().toArray();
-    if (services != null && services.length != 0) {
-      for (Object service : services) {
-        osgiServices.add((T) service);
+    if (services != null) {
+      if (services.length != 0) {
+        for (Object service : services) {
+          osgiServices.add((T) service);
+        }
+      } else {
+        LOG.debug("No services found for '{}'.", serviceName);
       }
     } else {
-      LOG.error("Unable to build Service list for type {}", serviceClassName);
+      LOG.warn("Failed to build service tracker while attempting to track '{}'.", serviceName);
+      throw new OsgiServiceTrackingException();
     }
     return osgiServices;
   }
