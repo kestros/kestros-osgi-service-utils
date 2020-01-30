@@ -25,8 +25,12 @@ import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Deactivate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class JcrFileCacheService extends BaseCacheService {
+
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   private ResourceResolver serviceResourceResolver;
 
@@ -46,7 +50,7 @@ public abstract class JcrFileCacheService extends BaseCacheService {
     try {
       purgeAll(getServiceResourceResolver());
     } catch (final CachePurgeException e) {
-      e.printStackTrace();
+      log.error(e.getMessage());
     }
   }
 
@@ -58,7 +62,7 @@ public abstract class JcrFileCacheService extends BaseCacheService {
     try {
       purgeAll(getServiceResourceResolver());
     } catch (final CachePurgeException e) {
-      e.printStackTrace();
+      log.error(e.getMessage());
     }
     closeServiceResourceResolver(getServiceResourceResolver(), this);
   }
