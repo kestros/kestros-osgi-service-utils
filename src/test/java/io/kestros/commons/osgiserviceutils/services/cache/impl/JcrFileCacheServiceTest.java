@@ -17,8 +17,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.kestros.commons.osgiserviceutils.SampleFile;
-import io.kestros.commons.osgiserviceutils.services.exceptions.CacheBuilderException;
-import io.kestros.commons.osgiserviceutils.services.exceptions.CachePurgeException;
+import io.kestros.commons.osgiserviceutils.exceptions.CacheBuilderException;
+import io.kestros.commons.osgiserviceutils.exceptions.CachePurgeException;
 import io.kestros.commons.structuredslingmodels.exceptions.InvalidResourceTypeException;
 import io.kestros.commons.structuredslingmodels.exceptions.ResourceNotFoundException;
 import java.util.Collections;

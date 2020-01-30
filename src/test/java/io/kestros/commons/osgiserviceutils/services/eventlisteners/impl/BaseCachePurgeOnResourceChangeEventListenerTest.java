@@ -15,7 +15,7 @@ import static org.mockito.Mockito.when;
 
 import io.kestros.commons.osgiserviceutils.services.cache.CacheService;
 import io.kestros.commons.osgiserviceutils.services.cache.impl.SampleJcrCacheService;
-import io.kestros.commons.osgiserviceutils.services.exceptions.CachePurgeException;
+import io.kestros.commons.osgiserviceutils.exceptions.CachePurgeException;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.sling.api.resource.LoginException;

@@ -3,9 +3,9 @@ package io.kestros.commons.osgiserviceutils.services.eventlisteners.impl;
 import static io.kestros.commons.osgiserviceutils.utils.OsgiServiceUtils.closeServiceResourceResolver;
 import static io.kestros.commons.osgiserviceutils.utils.OsgiServiceUtils.getOpenServiceResourceResolverOrNullAndLogExceptions;
 
+import io.kestros.commons.osgiserviceutils.exceptions.CachePurgeException;
 import io.kestros.commons.osgiserviceutils.services.cache.CacheService;
 import io.kestros.commons.osgiserviceutils.services.eventlisteners.CachePurgeOnResourceChangeEventListener;
-import io.kestros.commons.osgiserviceutils.services.exceptions.CachePurgeException;
 import java.util.List;
 import javax.annotation.Nonnull;
 import org.apache.sling.api.resource.ResourceResolver;

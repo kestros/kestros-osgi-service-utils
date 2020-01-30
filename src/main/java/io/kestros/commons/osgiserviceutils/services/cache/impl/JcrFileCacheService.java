@@ -8,8 +8,8 @@ import static io.kestros.commons.structuredslingmodels.utils.SlingModelUtils.ada
 import static io.kestros.commons.structuredslingmodels.utils.SlingModelUtils.getResourceAsBaseResource;
 import static org.apache.jackrabbit.JcrConstants.JCR_PRIMARYTYPE;
 
-import io.kestros.commons.osgiserviceutils.services.exceptions.CacheBuilderException;
-import io.kestros.commons.osgiserviceutils.services.exceptions.CachePurgeException;
+import io.kestros.commons.osgiserviceutils.exceptions.CacheBuilderException;
+import io.kestros.commons.osgiserviceutils.exceptions.CachePurgeException;
 import io.kestros.commons.structuredslingmodels.BaseResource;
 import io.kestros.commons.structuredslingmodels.exceptions.InvalidResourceTypeException;
 import io.kestros.commons.structuredslingmodels.exceptions.ResourceNotFoundException;
@@ -132,12 +132,7 @@ public abstract class JcrFileCacheService extends BaseCacheService {
           log.debug("Unable to delete {} while purging cache.", cacheRootChild.getPath());
         }
       }
-      //      try {
       log.info("{} successfully purged cache.", getClass().getSimpleName());
-      //        resourceResolver.commit();
-      //      } catch (PersistenceException exception) {
-      //        throw new CachePurgeException(exception.getMessage());
-      //      }
     } else {
       throw new CachePurgeException(
           "Failed to purge cache " + getClass().getSimpleName() + ". Cache root resource "

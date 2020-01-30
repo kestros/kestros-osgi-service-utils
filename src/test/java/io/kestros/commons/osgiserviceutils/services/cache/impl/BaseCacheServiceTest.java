@@ -14,7 +14,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.kestros.commons.osgiserviceutils.services.exceptions.CachePurgeException;
+import io.kestros.commons.osgiserviceutils.exceptions.CachePurgeException;
 import java.util.Date;
 import java.util.HashMap;
 import org.apache.sling.api.resource.ResourceResolver;

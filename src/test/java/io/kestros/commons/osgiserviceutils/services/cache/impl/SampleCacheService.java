@@ -1,7 +1,6 @@
 package io.kestros.commons.osgiserviceutils.services.cache.impl;
 
-import io.kestros.commons.osgiserviceutils.services.cache.impl.BaseCacheService;
-import io.kestros.commons.osgiserviceutils.services.exceptions.CachePurgeException;
+import io.kestros.commons.osgiserviceutils.exceptions.CachePurgeException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.event.jobs.JobManager;
 import org.osgi.service.component.annotations.Reference;

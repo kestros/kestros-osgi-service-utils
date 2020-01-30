@@ -1,8 +1,8 @@
 package io.kestros.commons.osgiserviceutils.services.cache.impl;
 
+import io.kestros.commons.osgiserviceutils.exceptions.CachePurgeException;
 import io.kestros.commons.osgiserviceutils.services.cache.CacheService;
 import io.kestros.commons.osgiserviceutils.services.cache.ManagedCacheService;
-import io.kestros.commons.osgiserviceutils.services.exceptions.CachePurgeException;
 import java.util.Date;
 import java.util.Map;
 import javax.annotation.Nonnull;
@@ -22,6 +22,10 @@ public abstract class BaseCacheService implements CacheService, ManagedCacheServ
 
   protected abstract void doPurge(ResourceResolver resourceResolver) throws CachePurgeException;
 
+  /**
+   * Adds cache creation job to the job queue, if the CacheService has been configured with a
+   * CacheCreationJobName.
+   */
   public void addCacheCreationJob(Map<String, Object> jobProperties) {
     if (getJobManager() != null && StringUtils.isNotEmpty(getCacheCreationJobName())) {
       log.info("Starting cache job {}. {}", getCacheCreationJobName(), jobProperties);

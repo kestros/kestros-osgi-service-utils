@@ -1,4 +1,4 @@
-package io.kestros.commons.osgiserviceutils.services.exceptions;
+package io.kestros.commons.osgiserviceutils.exceptions;
 
 public class CachePurgeException extends Exception {
 

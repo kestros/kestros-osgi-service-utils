@@ -1,4 +1,4 @@
-package io.kestros.commons.osgiserviceutils.services.exceptions;
+package io.kestros.commons.osgiserviceutils.exceptions;
 
 import static org.junit.Assert.*;
 
