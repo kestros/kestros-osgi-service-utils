@@ -129,8 +129,8 @@ public class OsgiServiceUtils {
     return getAllOsgiServicesOfType(serviceClassName, serviceTracker);
   }
 
-  private static <T> List<T> getAllOsgiServicesOfType(String serviceName,
-      ServiceTracker serviceTracker) throws OsgiServiceTrackingException {
+  private static <T> List<T> getAllOsgiServicesOfType(@Nonnull String serviceName,
+      @Nonnull ServiceTracker serviceTracker) throws OsgiServiceTrackingException {
     serviceTracker.open();
     List<T> osgiServices = new ArrayList<>();
     Object[] services = serviceTracker.getTracked().values().toArray();
