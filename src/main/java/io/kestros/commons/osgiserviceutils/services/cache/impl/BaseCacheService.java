@@ -5,7 +5,6 @@ import io.kestros.commons.osgiserviceutils.services.cache.CacheService;
 import io.kestros.commons.osgiserviceutils.services.cache.ManagedCacheService;
 import java.util.Date;
 import java.util.Map;
-import javax.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.event.jobs.JobManager;
@@ -26,7 +25,7 @@ public abstract class BaseCacheService implements CacheService, ManagedCacheServ
    * Adds cache creation job to the job queue, if the CacheService has been configured with a
    * CacheCreationJobName.
    */
-  public void addCacheCreationJob(Map<String, Object> jobProperties) {
+  public void addCacheCreationJob(final Map<String, Object> jobProperties) {
     if (getJobManager() != null && StringUtils.isNotEmpty(getCacheCreationJobName())) {
       log.info("Starting cache job {}. {}", getCacheCreationJobName(), jobProperties);
       getJobManager().addJob(getCacheCreationJobName(), jobProperties);
@@ -40,7 +39,7 @@ public abstract class BaseCacheService implements CacheService, ManagedCacheServ
   protected abstract JobManager getJobManager();
 
   @Override
-  public void purgeAll(@Nonnull ResourceResolver resourceResolver) throws CachePurgeException {
+  public void purgeAll(final ResourceResolver resourceResolver) throws CachePurgeException {
     if (isCachePurgeTimeoutExpired()) {
       this.lastPurged = new Date();
       if (resourceResolver != null) {
@@ -51,13 +50,13 @@ public abstract class BaseCacheService implements CacheService, ManagedCacheServ
   }
 
   @Override
-  public void enable(ResourceResolver resourceResolver) throws CachePurgeException {
+  public void enable(final ResourceResolver resourceResolver) throws CachePurgeException {
     this.purgeAll(resourceResolver);
     this.isLive = true;
   }
 
   @Override
-  public void disable(ResourceResolver resourceResolver) throws CachePurgeException {
+  public void disable(final ResourceResolver resourceResolver) throws CachePurgeException {
     this.purgeAll(resourceResolver);
     this.isLive = false;
   }

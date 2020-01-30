@@ -45,7 +45,7 @@ public abstract class JcrFileCacheService extends BaseCacheService {
         getServiceUserName(), getServiceResourceResolver(), getResourceResolverFactory(), this);
     try {
       purgeAll(getServiceResourceResolver());
-    } catch (CachePurgeException e) {
+    } catch (final CachePurgeException e) {
       e.printStackTrace();
     }
   }
@@ -57,7 +57,7 @@ public abstract class JcrFileCacheService extends BaseCacheService {
   public void deactivate() {
     try {
       purgeAll(getServiceResourceResolver());
-    } catch (CachePurgeException e) {
+    } catch (final CachePurgeException e) {
       e.printStackTrace();
     }
     closeServiceResourceResolver(getServiceResourceResolver(), this);
@@ -68,27 +68,27 @@ public abstract class JcrFileCacheService extends BaseCacheService {
     return this.serviceResourceResolver;
   }
 
-  protected void createCacheFile(String content, String relativePath, FileType type)
+  protected void createCacheFile(final String content, final String relativePath, final FileType type)
       throws CacheBuilderException {
-    String parentPath = getParentPathFromPath(getServiceCacheRootPath() + relativePath);
-    String newFileName = relativePath.split("/")[relativePath.split("/").length - 1];
+    final String parentPath = getParentPathFromPath(getServiceCacheRootPath() + relativePath);
+    final String newFileName = relativePath.split("/")[relativePath.split("/").length - 1];
 
     if (getServiceResourceResolver() != null && getServiceResourceResolver().isLive()) {
       if (getServiceResourceResolver().getResource(parentPath) == null) {
         try {
           createResourcesFromPath(parentPath, getServiceResourceResolver());
-        } catch (ResourceNotFoundException | PersistenceException exception) {
+        } catch (final ResourceNotFoundException | PersistenceException exception) {
           throw new CacheBuilderException(String.format(
               "%s was unable to create jcr file cache for '%s'. Cache root resource not found. %s",
               getClass().getSimpleName(), relativePath, exception.getMessage()));
         }
       }
       try {
-        BaseResource parentResource = getResourceAsBaseResource(parentPath,
+        final BaseResource parentResource = getResourceAsBaseResource(parentPath,
             getServiceResourceResolver());
         createTextFileResourceAndCommit(content, type.getOutputContentType(),
             parentResource.getResource(), newFileName, getServiceResourceResolver());
-      } catch (ResourceNotFoundException | PersistenceException exception) {
+      } catch (final ResourceNotFoundException | PersistenceException exception) {
         throw new CacheBuilderException(
             String.format("%s failed to create jcr cache file for '%s'. %s",
                 getClass().getSimpleName(), relativePath, exception.getMessage()));
@@ -100,17 +100,17 @@ public abstract class JcrFileCacheService extends BaseCacheService {
     }
   }
 
-  protected <T extends BaseFile> T getCachedFile(String path, Class<T> type)
+  protected <T extends BaseFile> T getCachedFile(final String path, final Class<T> type)
       throws ResourceNotFoundException, InvalidResourceTypeException {
     if (getServiceResourceResolver() != null) {
-      BaseResource cachedFileResource = getResourceAsBaseResource(getServiceCacheRootPath() + path,
+      final BaseResource cachedFileResource = getResourceAsBaseResource(getServiceCacheRootPath() + path,
           getServiceResourceResolver());
       return adaptToFileType(cachedFileResource, type);
     }
     throw new ResourceNotFoundException("No service resolver to retrieve cached file.");
   }
 
-  protected boolean isFileCached(String relativePath) {
+  protected boolean isFileCached(final String relativePath) {
     if (getServiceResourceResolver() != null) {
       return getServiceResourceResolver().getResource(getServiceCacheRootPath() + relativePath)
              != null;
@@ -119,16 +119,16 @@ public abstract class JcrFileCacheService extends BaseCacheService {
   }
 
   @Override
-  protected void doPurge(ResourceResolver resourceResolver) throws CachePurgeException {
+  protected void doPurge(final ResourceResolver resourceResolver) throws CachePurgeException {
     log.info("{} purging cache.", getClass().getSimpleName());
-    Resource serviceCacheRootResource = resourceResolver.getResource(getServiceCacheRootPath());
+    final Resource serviceCacheRootResource = resourceResolver.getResource(getServiceCacheRootPath());
     if (serviceCacheRootResource != null) {
 
-      for (BaseResource cacheRootChild : SlingModelUtils.getChildrenAsBaseResource(
+      for (final BaseResource cacheRootChild : SlingModelUtils.getChildrenAsBaseResource(
           serviceCacheRootResource)) {
         try {
           resourceResolver.delete(cacheRootChild.getResource());
-        } catch (PersistenceException exception) {
+        } catch (final PersistenceException exception) {
           log.debug("Unable to delete {} while purging cache.", cacheRootChild.getPath());
         }
       }
@@ -140,24 +140,24 @@ public abstract class JcrFileCacheService extends BaseCacheService {
     }
   }
 
-  String getParentPathFromPath(String path) {
+  String getParentPathFromPath(final String path) {
     return path.substring(0, path.lastIndexOf('/'));
   }
 
-  void createResourcesFromPath(String path, ResourceResolver resolver)
+  void createResourcesFromPath(String path, final ResourceResolver resolver)
       throws ResourceNotFoundException, PersistenceException {
     if (path.startsWith(getServiceCacheRootPath())) {
       path = path.split(getServiceCacheRootPath())[1];
     }
-    String[] pathSegments = path.split("/");
-    Map<String, Object> properties = new HashMap<>();
+    final String[] pathSegments = path.split("/");
+    final Map<String, Object> properties = new HashMap<>();
     properties.put(JCR_PRIMARYTYPE, "sling:Folder");
     BaseResource parentResource = getResourceAsBaseResource(getServiceCacheRootPath(), resolver);
-    for (String resourceName : pathSegments) {
-      Resource resourceToCreate = resolver.getResource(
+    for (final String resourceName : pathSegments) {
+      final Resource resourceToCreate = resolver.getResource(
           parentResource.getPath() + "/" + resourceName);
       if (resourceToCreate == null) {
-        Resource newResource = resolver.create(parentResource.getResource(), resourceName,
+        final Resource newResource = resolver.create(parentResource.getResource(), resourceName,
             properties);
         parentResource = adaptToBaseResource(newResource);
       } else {

@@ -1,6 +1,5 @@
 package io.kestros.commons.osgiserviceutils.utils;
 
-import io.kestros.commons.osgiserviceutils.exceptions.OsgiServiceTrackingException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -44,8 +43,8 @@ public class OsgiServiceUtils {
                + "ResourceResolver already exists.", service, service.getClass().getSimpleName());
     } else {
 
-      Map<String, Object> params = Collections.singletonMap(ResourceResolverFactory.SUBSERVICE,
-          serviceName);
+      final Map<String, Object> params = Collections.singletonMap(
+          ResourceResolverFactory.SUBSERVICE, serviceName);
 
       resourceResolver = resourceResolverFactory.getServiceResourceResolver(params);
       LOG.info("Opened service user {} resourceResolver for service {}.", serviceName,
@@ -73,7 +72,7 @@ public class OsgiServiceUtils {
     try {
       return getOpenServiceResourceResolver(serviceName, existingResourceResolver,
           resourceResolverFactory, service);
-    } catch (LoginException exception) {
+    } catch (final LoginException exception) {
       LOG.error("Failed to log into service user {} resourceResolver for {}. {}", serviceName,
           service.getClass().getSimpleName(), exception.getMessage());
     }
@@ -103,12 +102,12 @@ public class OsgiServiceUtils {
    * @param type Service class to retrieve instances of.
    * @param <T> Generic type.
    * @return All Services which are registered to the specified service class.
-   * @throws OsgiServiceTrackingException Failed to build service tracker.
    */
-  public static <T> List<T> getAllOsgiServicesOfType(ComponentContext componentContext,
-      Class<T> type) throws OsgiServiceTrackingException {
-    ServiceTracker serviceTracker = new ServiceTracker(componentContext.getBundleContext(), type,
-        null);
+  @Nonnull
+  public static <T> List<T> getAllOsgiServicesOfType(final ComponentContext componentContext,
+      final Class<T> type) {
+    final ServiceTracker serviceTracker = new ServiceTracker(componentContext.getBundleContext(),
+        type, null);
     return getAllOsgiServicesOfType(type.getName(), serviceTracker);
   }
 
@@ -119,33 +118,30 @@ public class OsgiServiceUtils {
    * @param serviceClassName Service class name to retrieve instances of.
    * @param <T> Generic type.
    * @return All Services which are registered to the specified service class.
-   * @throws OsgiServiceTrackingException Failed to build service tracker.
    */
-  public static <T> List<T> getAllOsgiServicesOfType(ComponentContext componentContext,
-      String serviceClassName) throws OsgiServiceTrackingException {
-    ServiceTracker serviceTracker = new ServiceTracker(componentContext.getBundleContext(),
+  @Nonnull
+  public static <T> List<T> getAllOsgiServicesOfType(final ComponentContext componentContext,
+      final String serviceClassName) {
+    final ServiceTracker serviceTracker = new ServiceTracker(componentContext.getBundleContext(),
         serviceClassName, null);
 
     return getAllOsgiServicesOfType(serviceClassName, serviceTracker);
   }
 
-  private static <T> List<T> getAllOsgiServicesOfType(@Nonnull String serviceName,
-      @Nonnull ServiceTracker serviceTracker) throws OsgiServiceTrackingException {
+  @Nonnull
+  private static <T> List<T> getAllOsgiServicesOfType(@Nonnull final String serviceName,
+      @Nonnull final ServiceTracker serviceTracker) {
     serviceTracker.open();
-    List<T> osgiServices = new ArrayList<>();
-    Object[] services = serviceTracker.getTracked().values().toArray();
-    if (services != null) {
-      if (services.length != 0) {
-        for (Object service : services) {
-          osgiServices.add((T) service);
-        }
-      } else {
-        LOG.debug("No services found for '{}'.", serviceName);
+    final List<T> osgiServices = new ArrayList<>();
+    final Object[] services = serviceTracker.getTracked().values().toArray();
+    if (services.length != 0) {
+      for (final Object service : services) {
+        osgiServices.add((T) service);
       }
     } else {
-      LOG.warn("Failed to build service tracker while attempting to track '{}'.", serviceName);
-      throw new OsgiServiceTrackingException();
+      LOG.debug("No services found for '{}'.", serviceName);
     }
+    serviceTracker.close();
     return osgiServices;
   }
 }

@@ -22,7 +22,7 @@ public abstract class BaseServiceResolverService {
    * Activates Cache service. Opens service ResourceResolver, which is used to build cached files.
    */
   @Activate
-  public void activate(ComponentContext ctx) {
+  public void activate(final ComponentContext ctx) {
     serviceResourceResolver = getOpenServiceResourceResolverOrNullAndLogExceptions(
         getServiceUserName(), getServiceResourceResolver(), getResourceResolverFactory(), this);
     componentContext = ctx;

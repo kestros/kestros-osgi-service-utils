@@ -31,7 +31,7 @@ public abstract class BaseCachePurgeOnResourceChangeEventListener
    * Activates event lister service. Opens ResourceResolver for service user.
    */
   @Activate
-  public void activate(ComponentContext ctx) {
+  public void activate(final ComponentContext ctx) {
     serviceResourceResolver = getOpenServiceResourceResolverOrNullAndLogExceptions(
         getServiceUserName(), getServiceResourceResolver(), getResourceResolverFactory(), this);
     componentContext = ctx;
@@ -46,9 +46,9 @@ public abstract class BaseCachePurgeOnResourceChangeEventListener
   }
 
   @Override
-  public void onChange(@Nonnull List<ResourceChange> list) {
+  public void onChange(@Nonnull final List<ResourceChange> list) {
     try {
-      for (CacheService cacheService : getCacheServices()) {
+      for (final CacheService cacheService : getCacheServices()) {
         if (cacheService != null) {
           cacheService.purgeAll(getServiceResourceResolver());
         } else {
@@ -56,7 +56,7 @@ public abstract class BaseCachePurgeOnResourceChangeEventListener
               getClass().getSimpleName());
         }
       }
-    } catch (CachePurgeException exception) {
+    } catch (final CachePurgeException exception) {
       log.error("Failed to create cache purge job. {}", exception.getMessage());
     }
   }

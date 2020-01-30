@@ -31,18 +31,18 @@ public class ResourceCreationUtils {
    * @param resourceResolver ResourceResolver used to create new file.
    * @throws PersistenceException New file could not be created/persisted by resourceResolver.
    */
-  public static void createTextFileResource(String content, String mimeType,
-      Resource parentResource, String name, ResourceResolver resourceResolver)
+  public static void createTextFileResource(final String content, final String mimeType,
+      final Resource parentResource, final String name, final ResourceResolver resourceResolver)
       throws PersistenceException {
-    Map<String, Object> properties = new HashMap<>();
+    final Map<String, Object> properties = new HashMap<>();
     properties.put(JCR_PRIMARYTYPE, "nt:file");
 
-    Map<String, Object> jcrContentProperties = new HashMap<>();
+    final Map<String, Object> jcrContentProperties = new HashMap<>();
     jcrContentProperties.put(JCR_PRIMARYTYPE, JcrConstants.NT_RESOURCE);
     jcrContentProperties.put(JCR_DATA, new ByteArrayInputStream(content.getBytes(UTF_8)));
     jcrContentProperties.put(JCR_MIMETYPE, mimeType);
 
-    Resource fileResource = resourceResolver.create(parentResource, name, properties);
+    final Resource fileResource = resourceResolver.create(parentResource, name, properties);
     resourceResolver.create(fileResource, JCR_CONTENT, jcrContentProperties);
   }
 
@@ -57,8 +57,8 @@ public class ResourceCreationUtils {
    * @param resourceResolver ResourceResolver used to create new file.
    * @throws PersistenceException New file could not be created/persisted by resourceResolver.
    */
-  public static void createTextFileResourceAndCommit(String content, String mimeType,
-      Resource parentResource, String name, ResourceResolver resourceResolver)
+  public static void createTextFileResourceAndCommit(final String content, final String mimeType,
+      final Resource parentResource, final String name, final ResourceResolver resourceResolver)
       throws PersistenceException {
     createTextFileResource(content, mimeType, parentResource, name, resourceResolver);
     resourceResolver.commit();
