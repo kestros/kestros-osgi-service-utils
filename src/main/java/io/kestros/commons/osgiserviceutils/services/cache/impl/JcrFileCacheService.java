@@ -166,8 +166,9 @@ public abstract class JcrFileCacheService extends BaseCacheService {
           serviceCacheRootResource)) {
         try {
           resourceResolver.delete(cacheRootChild.getResource());
+          resourceResolver.commit();
         } catch (final PersistenceException exception) {
-          log.debug("Unable to delete {} while purging cache.", cacheRootChild.getPath());
+          log.error("Unable to delete {} while purging cache.", cacheRootChild.getPath());
         }
       }
       log.info("{} successfully purged cache.", getClass().getSimpleName());
