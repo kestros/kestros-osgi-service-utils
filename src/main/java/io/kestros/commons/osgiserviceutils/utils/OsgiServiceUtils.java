@@ -14,6 +14,9 @@ import org.osgi.util.tracker.ServiceTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Utility methods for OSGI services.
+ */
 public class OsgiServiceUtils {
 
   private OsgiServiceUtils() {
@@ -31,6 +34,8 @@ public class OsgiServiceUtils {
    *     needed.
    * @param service Service the ResourceResolver will be used for.
    * @return Newly opened service ResourceResolver or existing resourceResolver if it is still live.
+   * @throws LoginException ResourceResolver factory failed to login for the given service
+   *     UserID.
    */
   @Nonnull
   public static ResourceResolver getOpenServiceResourceResolver(@Nonnull final String serviceName,

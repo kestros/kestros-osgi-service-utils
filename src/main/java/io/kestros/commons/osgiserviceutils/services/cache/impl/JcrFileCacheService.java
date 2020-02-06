@@ -28,12 +28,21 @@ import org.osgi.service.component.annotations.Deactivate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Baseline logic for building a cache within the JCR. Caches output as nt:file Resources.
+ */
 public abstract class JcrFileCacheService extends BaseCacheService {
 
   private final Logger log = LoggerFactory.getLogger(getClass());
 
   private ResourceResolver serviceResourceResolver;
 
+  /**
+   * Root Resource path to build the cache from. If /content/sites/page is cached, it will cache to
+   * /var/cache/pages/content/sites/page.html, with /var/cache/pages being the cache root path.
+   *
+   * @return Root Resource path to build the cache from.
+   */
   public abstract String getServiceCacheRootPath();
 
   protected abstract String getServiceUserName();
@@ -67,6 +76,11 @@ public abstract class JcrFileCacheService extends BaseCacheService {
     closeServiceResourceResolver(getServiceResourceResolver(), this);
   }
 
+  /**
+   * ServiceResourceResolver.
+   *
+   * @return ServiceResourceResolver.
+   */
   @Nullable
   public ResourceResolver getServiceResourceResolver() {
     return this.serviceResourceResolver;

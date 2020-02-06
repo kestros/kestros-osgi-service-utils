@@ -14,6 +14,9 @@ import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 
+/**
+ * Utility methods for creating Resources within the JCR.
+ */
 public class ResourceCreationUtils {
 
   private ResourceCreationUtils() {

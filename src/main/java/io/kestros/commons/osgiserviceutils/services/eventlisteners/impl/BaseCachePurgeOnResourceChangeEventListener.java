@@ -16,6 +16,9 @@ import org.osgi.service.component.annotations.Deactivate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Baseline logic for clearing cache based on a ResourceChange Event.
+ */
 public abstract class BaseCachePurgeOnResourceChangeEventListener
     implements CachePurgeOnResourceChangeEventListener {
 
@@ -29,6 +32,8 @@ public abstract class BaseCachePurgeOnResourceChangeEventListener
 
   /**
    * Activates event lister service. Opens ResourceResolver for service user.
+   *
+   * @param ctx ComponentContext.
    */
   @Activate
   public void activate(final ComponentContext ctx) {
