@@ -261,7 +261,7 @@ public class JcrFileCacheServiceTest {
 
     assertFalse(jcrFileCacheService.isFileCached("/resource/new-cache-file"));
 
-    verify(resourceResolver, times(1)).commit();
+    verify(resourceResolver, times(2)).commit();
   }
 
   @Test
@@ -319,7 +319,7 @@ public class JcrFileCacheServiceTest {
 
     assertFalse(jcrFileCacheService.isFileCached("/resource/new-cache-file"));
     verify(resourceResolver, times(1)).delete(any());
-    verify(resourceResolver, times(3)).commit();
+    verify(resourceResolver, times(4)).commit();
   }
 
   @Test
@@ -336,7 +336,7 @@ public class JcrFileCacheServiceTest {
     assertFalse("/var/cache/test/resource/new-cache-file",
         jcrFileCacheService.isFileCached("/resource/new-cache-file"));
     verify(resourceResolver, times(3)).delete(any());
-    verify(resourceResolver, times(3)).commit();
+    verify(resourceResolver, times(6)).commit();
   }
 
   @Test
