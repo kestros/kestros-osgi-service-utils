@@ -20,6 +20,7 @@
 package io.kestros.commons.osgiserviceutils.services.cache;
 
 import io.kestros.commons.osgiserviceutils.exceptions.CachePurgeException;
+import java.io.Serializable;
 import java.util.Date;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.osgi.service.component.annotations.Activate;
@@ -28,7 +29,7 @@ import org.osgi.service.component.annotations.Deactivate;
 /**
  * Manages the managing, building, purging and retrieval of Cached values.
  */
-public interface CacheService {
+public interface CacheService extends Serializable {
 
   /**
    * Activates the CacheService.
