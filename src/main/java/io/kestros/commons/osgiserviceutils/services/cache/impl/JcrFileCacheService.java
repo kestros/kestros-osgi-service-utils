@@ -24,6 +24,7 @@ import static io.kestros.commons.osgiserviceutils.utils.OsgiServiceUtils.getOpen
 import static io.kestros.commons.osgiserviceutils.utils.ResourceCreationUtils.createTextFileResourceAndCommit;
 import static io.kestros.commons.structuredslingmodels.utils.FileModelUtils.adaptToFileType;
 import static io.kestros.commons.structuredslingmodels.utils.SlingModelUtils.adaptToBaseResource;
+import static io.kestros.commons.structuredslingmodels.utils.SlingModelUtils.getChildrenAsBaseResource;
 import static io.kestros.commons.structuredslingmodels.utils.SlingModelUtils.getResourceAsBaseResource;
 import static org.apache.jackrabbit.JcrConstants.JCR_PRIMARYTYPE;
 
@@ -34,8 +35,8 @@ import io.kestros.commons.structuredslingmodels.exceptions.InvalidResourceTypeEx
 import io.kestros.commons.structuredslingmodels.exceptions.ResourceNotFoundException;
 import io.kestros.commons.structuredslingmodels.filetypes.BaseFile;
 import io.kestros.commons.structuredslingmodels.filetypes.FileType;
-import io.kestros.commons.structuredslingmodels.utils.SlingModelUtils;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 import org.apache.sling.api.resource.PersistenceException;
@@ -157,18 +158,20 @@ public abstract class JcrFileCacheService extends BaseCacheService {
 
   @Override
   protected void doPurge(final ResourceResolver resourceResolver) throws CachePurgeException {
-    log.info("{} purging cache.", getClass().getSimpleName());
-    final Resource serviceCacheRootResource = resourceResolver.getResource(
+    final Resource serviceCacheRootResource = getServiceResourceResolver().getResource(
         getServiceCacheRootPath());
+    log.info("{} purging cache.", getClass().getSimpleName());
     if (serviceCacheRootResource != null) {
-
-      for (final BaseResource cacheRootChild : SlingModelUtils.getChildrenAsBaseResource(
-          serviceCacheRootResource)) {
-        try {
-          resourceResolver.delete(cacheRootChild.getResource());
-          resourceResolver.commit();
-        } catch (final PersistenceException exception) {
-          log.error("Unable to delete {} while purging cache.", cacheRootChild.getPath());
+      List<BaseResource> resourceToPurgeList = getChildrenAsBaseResource(serviceCacheRootResource);
+      log.debug("Purging {} top level resource.", resourceToPurgeList.size());
+      for (final BaseResource cacheRootChild : resourceToPurgeList) {
+        if (!cacheRootChild.getName().equals("rep:policy")) {
+          try {
+            getServiceResourceResolver().delete(cacheRootChild.getResource());
+            getServiceResourceResolver().commit();
+          } catch (final PersistenceException exception) {
+            log.warn("Unable to delete {} while purging cache.", cacheRootChild.getPath());
+          }
         }
       }
       log.info("{} successfully purged cache.", getClass().getSimpleName());
