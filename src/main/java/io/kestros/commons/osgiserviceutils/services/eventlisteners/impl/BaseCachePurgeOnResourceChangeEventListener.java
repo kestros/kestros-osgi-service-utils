@@ -71,17 +71,17 @@ public abstract class BaseCachePurgeOnResourceChangeEventListener
 
   @Override
   public void onChange(@Nonnull final List<ResourceChange> list) {
-    try {
-      for (final CacheService cacheService : getCacheServices()) {
+    for (final CacheService cacheService : getCacheServices()) {
+      try {
         if (cacheService != null) {
           cacheService.purgeAll(getServiceResourceResolver());
         } else {
-          log.error("Failed to create cache purge job. No cache service detected for {}.",
+          log.error("Failed to purge cache for{}. No cache service detected.",
               getClass().getSimpleName());
         }
+      } catch (final CachePurgeException exception) {
+        log.error("Failed to create cache purge job. {}", exception.getMessage());
       }
-    } catch (final CachePurgeException exception) {
-      log.error("Failed to create cache purge job. {}", exception.getMessage());
     }
   }
 
