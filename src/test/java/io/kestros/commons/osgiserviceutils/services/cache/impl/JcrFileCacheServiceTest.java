@@ -90,7 +90,7 @@ public class JcrFileCacheServiceTest {
     assertEquals("test-jcr-cache-service-user",
         jcrFileCacheService.getServiceResourceResolver().getUserID());
     verify(resourceResolverFactory, times(1)).getServiceResourceResolver(any());
-    verify(jcrFileCacheService, times(6)).getServiceResourceResolver();
+    verify(jcrFileCacheService, times(7)).getServiceResourceResolver();
   }
 
   @Test
