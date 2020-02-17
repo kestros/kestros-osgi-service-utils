@@ -10,9 +10,57 @@ Baseline abstract CacheService class which handles cache purge management logic 
 ```
 @Component(immediate = true, service = {ManagedCacheService.class, MyCacheService.class})
 public class MyCacheServiceImpl extends BaseCacheService implements MyCacheService {
+   
+  // If the cache service will build/purge caches asynchronously using the Sling JobManager. 
+  @Reference
+  private JobManager jobManager;
+
+  @Override
+  protected void doPurge(ResourceResolver resourceResolver) throws CachePurgeException {
+    // Purge logic.
+  }
+
+  @Override
+  protected long getMinimumTimeBetweenCachePurges() {
+    // Time before a cache can be purged after its last purge. 
+    // The prevents cache purges from triggering too frequent, 
+    // for example from an event listener during a code deployment.
+    return 1000;
+  }
+
+  @Override
+  protected String getCacheCreationJobName() {
+    // Only required if using JobManager to build/purge cache asynchronously.
+    return "sample-creation-job-name";
+  }
+
+  @Override
+  protected JobManager getJobManager() {
+    // Only required if using JobManager to build/purge cache asynchronously.
+    return jobManager;
+  }
+
+  @Override
+  public void activate() {
+    // OSGI Component activation logic.
+  }
+
+  @Override
+  public void deactivate() {
+    // OSGI Component activation logic.
+  }
+
+  @Override
+  public String getDisplayName() {
+    // Cache display name, only required for managed caches.
+    return "sample cache service";
+  }
 }
 ```
 #### Jcr File Cache Service
+
+
+
 <!-- 
 #### Managed Cache Service
 A cache services can be managed from the Kestros UI by registering it as a `ManagedCacheService` component.
