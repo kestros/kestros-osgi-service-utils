@@ -7,7 +7,7 @@ Foundational and utility logic for building OSGI Services on Kestros/Sling insta
   * [Cache Service](#cache-service)
     + [Base Cache Service](#base-cache-service)
     + [Jcr File Cache Service](#jcr-file-cache-service)
-    + [Managed Cache Service](#managed-cache-service)
+    <!-- + [Managed Cache Service](#managed-cache-service) -->
   * [Cache Purge Event Listener Service](#cache-purge-event-listener-service)
 - [Utilities](#utilities)
   * [OSGI Service Utils](#osgi-service-utils)
