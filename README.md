@@ -201,6 +201,46 @@ public class MyCacheServiceImpl extends JcrFileCacheService implements MyCacheSe
 ```
 --> 
 ### Cache Purge Event Listener Service
+To create an EventListener that purges one or more `CacheService` implementation, extend `BaseCachePurgeOnResourceChangeEventListener`.
+
+```
+// Changes to listen for.
+@Component(service = ResourceChangeListener.class,
+           property = {ResourceChangeListener.CHANGES + "=ADDED",
+               ResourceChangeListener.CHANGES + "=CHANGED",
+               ResourceChangeListener.CHANGES + "=REMOVED",
+               ResourceChangeListener.CHANGES + "=PROVIDER_ADDED",
+               ResourceChangeListener.CHANGES + "=PROVIDER_REMOVED",
+               ResourceChangeListener.PATHS + "=/apps"},
+           immediate = true)
+public class MyCachePurgeOnResourceChangeEventListener
+    extends BaseCachePurgeOnResourceChangeEventListener {
+
+  @Reference(cardinality = ReferenceCardinality.OPTIONAL,
+             policyOption = ReferencePolicyOption.GREEDY)
+  private MyCacheService cacheService;
+
+  @Reference
+  private ResourceResolverFactory resourceResolverFactory;
+
+  @Override
+  protected String getServiceUserName() {
+    // mapped service user that will perform the cache clear.
+    return "my-service-user-name";
+  }
+
+  @Override
+  public <T extends CacheService> List<T> getCacheServices() {
+    // caches services to purge.
+    return Arrays.asList((T) cacheService);
+  }
+
+  @Override
+  public ResourceResolverFactory getResourceResolverFactory() {
+    return resourceResolverFactory;
+  }
+}
+```
 
 ## Utilities
 ### OSGI Service Utils
