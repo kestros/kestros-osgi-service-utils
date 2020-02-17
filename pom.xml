@@ -35,8 +35,7 @@
   <packaging>bundle</packaging>
 
   <name>Kestros Commons - OSGI Service Utils</name>
-  <description>
-  </description>
+  <description>Foundational and utility logic for building OSGI Services on Kestros/Sling instances.</description>
 
   <properties>
     <rootPackage>io.kestros.commons.osgiserviceutils</rootPackage>
