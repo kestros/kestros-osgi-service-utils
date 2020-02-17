@@ -158,27 +158,33 @@ public abstract class JcrFileCacheService extends BaseCacheService {
 
   @Override
   protected void doPurge(final ResourceResolver resourceResolver) throws CachePurgeException {
-    final Resource serviceCacheRootResource = getServiceResourceResolver().getResource(
-        getServiceCacheRootPath());
-    log.info("{} purging cache.", getClass().getSimpleName());
-    if (serviceCacheRootResource != null) {
-      List<BaseResource> resourceToPurgeList = getChildrenAsBaseResource(serviceCacheRootResource);
-      log.debug("Purging {} top level resource.", resourceToPurgeList.size());
-      for (final BaseResource cacheRootChild : resourceToPurgeList) {
-        if (!cacheRootChild.getName().equals("rep:policy")) {
-          try {
-            getServiceResourceResolver().delete(cacheRootChild.getResource());
-            getServiceResourceResolver().commit();
-          } catch (final PersistenceException exception) {
-            log.warn("Unable to delete {} while purging cache.", cacheRootChild.getPath());
+    if (getServiceResourceResolver() != null) {
+      final Resource serviceCacheRootResource = getServiceResourceResolver().getResource(
+          getServiceCacheRootPath());
+      log.info("{} purging cache.", getClass().getSimpleName());
+      if (serviceCacheRootResource != null) {
+        List<BaseResource> resourceToPurgeList = getChildrenAsBaseResource(
+            serviceCacheRootResource);
+        log.debug("Purging {} top level resource.", resourceToPurgeList.size());
+        for (final BaseResource cacheRootChild : resourceToPurgeList) {
+          if (!cacheRootChild.getName().equals("rep:policy")) {
+            try {
+              getServiceResourceResolver().delete(cacheRootChild.getResource());
+              getServiceResourceResolver().commit();
+            } catch (final PersistenceException exception) {
+              log.warn("Unable to delete {} while purging cache.", cacheRootChild.getPath());
+            }
           }
         }
+        log.info("{} successfully purged cache.", getClass().getSimpleName());
+      } else {
+        throw new CachePurgeException(
+            "Failed to purge cache " + getClass().getSimpleName() + ". Cache root resource "
+            + getServiceCacheRootPath() + " not found.");
       }
-      log.info("{} successfully purged cache.", getClass().getSimpleName());
     } else {
-      throw new CachePurgeException(
-          "Failed to purge cache " + getClass().getSimpleName() + ". Cache root resource "
-          + getServiceCacheRootPath() + " not found.");
+      throw new CachePurgeException("Failed to purge cache " + getClass().getSimpleName()
+                                    + ". Null service ResourceResolver.");
     }
   }
 
