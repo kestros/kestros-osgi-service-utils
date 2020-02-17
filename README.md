@@ -244,4 +244,6 @@ public class MyCachePurgeOnResourceChangeEventListener
 
 ## Utilities
 ### OSGI Service Utils
+`OsgiServiceUtils` provides utility methods for building service ResourceResolvers, and retrieving registered OSGI Services
 ### Resource Creation Utils
+`ResourceCreationUtils` provides utility methods for creating general Resources, text file Resources, etc.
