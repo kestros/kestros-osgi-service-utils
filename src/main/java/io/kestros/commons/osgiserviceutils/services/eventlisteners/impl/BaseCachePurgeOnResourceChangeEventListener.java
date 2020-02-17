@@ -43,11 +43,11 @@ public abstract class BaseCachePurgeOnResourceChangeEventListener
 
   protected final Logger log = LoggerFactory.getLogger(getClass());
 
-  protected abstract String getServiceUserName();
-
   private ComponentContext componentContext;
 
   private ResourceResolver serviceResourceResolver;
+
+  protected abstract String getServiceUserName();
 
   /**
    * Activates event lister service. Opens ResourceResolver for service user.
