@@ -17,6 +17,17 @@ Foundational and utility logic for building OSGI Services on Kestros/Sling insta
 ## Baseline Services
 ### Service User Resource Resolver Service
 #### Mapping Service Users
+Service User Mapper configurations are used to map service user names to JCR system / principal users.
+
+To map service users, create a new configuration under a app's `/config` folder. (/apps/my-site/config).  
+ 
+Resource name: `org.apache.sling.serviceusermapping.impl.ServiceUserMapperImpl.amended-my-principal-name.xml`
+```
+<jcr:root xmlns:sling="http://sling.apache.org/jcr/sling/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0"
+  jcr:primaryType="sling:OsgiConfig"
+  user.mapping="[com.mysite.my-artifact:my-service-user-name=my-principal-name]"/>
+```
+For more information see [Sling Documentation] (https://sling.apache.org/documentation/the-sling-engine/service-authentication.html#service-user-mappings)
 
 ### Cache Service
 `CacheService` is a baseline interface for OSGI Services that will handle cache building, retrieval, and purges.  The interface only contains methods for purging cache, extending interfaces should provide methods for building and retrieving cached values.
