@@ -15,7 +15,29 @@ Foundational and utility logic for building OSGI Services on Kestros/Sling insta
 
 
 ## Baseline Services
+
 ### Service User Resource Resolver Service
+OSGI services that use service users can extend the `BaseServiceResolverService` abstract service class.  `BaseServiceResolverService` handles Service `ResourceResolver` creation on service activation and closes the service `ResourceResolver` when the service deactivates.
+
+```
+@Component(immediate = true, service = MyServiceResourceResolverService.class)
+public class MyServiceResourceResolverService extends BaseServiceResolverService {
+
+  @Reference
+  private ResourceResolverFactory resourceResolverFactory;
+
+  @Override
+  protected String getServiceUserName() {
+    return "my-service-user-name";
+  }
+
+  @Override
+  protected ResourceResolverFactory getResourceResolverFactory() {
+    return resourceResolverFactory;
+  }
+}
+```
+
 #### Mapping Service Users
 Service User Mapper configurations are used to map service user names to JCR system / principal users.
 
