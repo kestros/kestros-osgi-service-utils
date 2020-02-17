@@ -6,6 +6,12 @@ Foundational and utility logic for building OSGI Services on Kestros/Sling insta
 ### Cache Service
 #### Base Cache Service
 Baseline abstract CacheService class which handles cache purge management logic (last purged, last purged by, enable/disable).  All cache building, cache retrieval, and cache purging logic will need to be provided on extending classes.
+
+```
+@Component(immediate = true, service = {ManagedCacheService.class, MyCacheService.class})
+public class MyCacheServiceImpl extends BaseCacheService implements MyCacheService {
+}
+```
 #### Jcr File Cache Service
 <!-- 
 #### Managed Cache Service
