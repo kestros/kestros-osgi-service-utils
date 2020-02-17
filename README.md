@@ -3,6 +3,7 @@ Foundational and utility logic for building OSGI Services on Kestros/Sling insta
 
 ## Baseline Services
 ### Service User Resource Resolver Service
+#### Mapping Service Users
 ### Cache Service
 #### Base Cache Service
 Baseline abstract CacheService class which handles cache purge management logic (last purged, last purged by, enable/disable).  All cache building, cache retrieval, and cache purging logic will need to be provided on extending classes.
@@ -58,7 +59,64 @@ public class MyCacheServiceImpl extends BaseCacheService implements MyCacheServi
 }
 ```
 #### Jcr File Cache Service
+Provides caching for services that will use files stored in the JCR their cache.
 
+```
+@Component(immediate = true, service = {MyCacheService.class})
+public class MyCacheServiceImpl extends JcrFileCacheService implements MyCacheService {
+
+   // Used for building service user ResourceResolver. See Service User Resource Resolver for registering service users.
+  @Reference
+  private ResourceResolverFactory resourceResolverFactory;
+
+  // If the cache service will build/purge caches asynchronously using the Sling JobManager.
+  @Reference
+  private JobManager jobManager;
+
+  @Override
+  public String getServiceCacheRootPath() {
+    // Path to cache root.
+    return "/var/cache/my-jcr-file-cache";
+  }
+
+  @Override
+  protected String getServiceUserName() {
+    // Service user mapping id.
+    return "my-jcr-cache-service-user";
+  }
+
+  @Override
+  protected ResourceResolverFactory getResourceResolverFactory() {
+    return resourceResolverFactory;
+  }
+
+  @Override
+  public String getDisplayName() {
+    // Cache display name, only required for managed caches.
+    return "Sample Jcr Cache Service";
+  }
+
+  @Override
+  public JobManager getJobManager() {
+    // Only required if using JobManager to build/purge cache asynchronously.
+    return jobManager;
+  }
+
+  @Override
+  protected long getMinimumTimeBetweenCachePurges() {
+    // Time before a cache can be purged after its last purge. 
+    // The prevents cache purges from triggering too frequent, 
+    // for example from an event listener during a code deployment.
+    return 1000;
+  }
+
+  @Override
+  public String getCacheCreationJobName() {
+    // Only required if using JobManager to build/purge cache asynchronously.
+    return "sample-creation";
+  }
+}
+```
 
 
 <!-- 
