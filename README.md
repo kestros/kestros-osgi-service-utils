@@ -17,7 +17,33 @@ Foundational and utility logic for building OSGI Services on Kestros/Sling insta
 ## Baseline Services
 ### Service User Resource Resolver Service
 #### Mapping Service Users
+
 ### Cache Service
+`CacheService` is a baseline interface for OSGI Services that will handle cache building, retrieval, and purges.  The interface only contains methods for purging cache, extending interfaces should provide methods for building and retrieving cached values.
+
+#### Interfacing the CacheService Interface
+When building new cache services, create a new interface Class which extends `CacheService`.
+```
+public interface MyCacheService extends CacheService {
+   void cacheMyString(String content);
+   void cacheMyPage(BaseContentPage page);
+}
+```
+Implementing Services are prioritized by service `rank`.
+```
+@Component(immediate = true, service = {ManagedCacheService.class, MyCacheService.class},
+            property = "service.ranking:Integer=1")
+public class MyCacheService extends BaseCacheService implements MyCacheService {
+  // This cache service will not be used when interacting with `MyCacheService` due to its lower rank.
+}
+
+@Component(immediate = true, service = {ManagedCacheService.class, MyCacheService.class},
+            property = "service.ranking:Integer=100")
+public class MyPrioritizedCacheService extends BaseCacheService implements MyCacheService {
+  // This cache service will be used when interacting with `MyCacheService` due to its higher rank.
+}
+```
+
 #### Base Cache Service
 Baseline abstract CacheService class which handles cache purge management logic (last purged, last purged by, enable/disable).  All cache building, cache retrieval, and cache purging logic will need to be provided on extending classes.
 
