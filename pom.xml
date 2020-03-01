@@ -26,7 +26,7 @@
   <parent>
     <groupId>io.kestros.commons</groupId>
     <artifactId>kestros-parent-strict</artifactId>
-    <version>0.0.2-SNAPSHOT</version>
+    <version>0.0.4</version>
   </parent>
 
   <artifactId>kestros-osgi-service-utils</artifactId>
@@ -35,7 +35,9 @@
   <packaging>bundle</packaging>
 
   <name>Kestros Commons - OSGI Service Utils</name>
-  <description>Foundational and utility logic for building OSGI Services on Kestros/Sling instances.</description>
+  <description>Foundational and utility logic for building OSGI Services on Kestros/Sling
+    instances.
+  </description>
 
   <properties>
     <rootPackage>io.kestros.commons.osgiserviceutils</rootPackage>
@@ -46,7 +48,7 @@
     <dependency>
       <groupId>io.kestros.commons</groupId>
       <artifactId>structured-sling-models</artifactId>
-      <version>0.0.2-SNAPSHOT</version>
+      <version>0.0.2</version>
     </dependency>
   </dependencies>
 
