@@ -111,30 +111,36 @@ public abstract class JcrFileCacheService extends BaseCacheService {
     final String parentPath = getParentPathFromPath(getServiceCacheRootPath() + relativePath);
     final String newFileName = relativePath.split("/")[relativePath.split("/").length - 1];
 
-    if (getServiceResourceResolver() != null && getServiceResourceResolver().isLive()) {
-      if (getServiceResourceResolver().getResource(parentPath) == null) {
-        try {
-          createResourcesFromPath(parentPath, getServiceResourceResolver());
-        } catch (final ResourceNotFoundException | PersistenceException exception) {
-          throw new CacheBuilderException(String.format(
-              "%s was unable to create jcr file cache for '%s'. Cache root resource not found. %s",
-              getClass().getSimpleName(), relativePath, exception.getMessage()));
+    if (getServiceResourceResolver() != null) {
+      if (getServiceResourceResolver().isLive()) {
+        if (getServiceResourceResolver().getResource(parentPath) == null) {
+          try {
+            createResourcesFromPath(parentPath, getServiceResourceResolver());
+          } catch (final ResourceNotFoundException | PersistenceException exception) {
+            throw new CacheBuilderException(String.format(
+                "%s was unable to create jcr file cache for '%s'. Cache root resource not found. "
+                + "%s", getClass().getSimpleName(), relativePath, exception.getMessage()));
+          }
         }
-      }
-      try {
-        final BaseResource parentResource = getResourceAsBaseResource(parentPath,
-            getServiceResourceResolver());
-        createTextFileResourceAndCommit(content, type.getOutputContentType(),
-            parentResource.getResource(), newFileName, getServiceResourceResolver());
-      } catch (final ResourceNotFoundException | PersistenceException exception) {
-        throw new CacheBuilderException(
-            String.format("%s failed to create jcr cache file for '%s'. %s",
-                getClass().getSimpleName(), relativePath, exception.getMessage()));
+        try {
+          final BaseResource parentResource = getResourceAsBaseResource(parentPath,
+              getServiceResourceResolver());
+          createTextFileResourceAndCommit(content, type.getOutputContentType(),
+              parentResource.getResource(), newFileName, getServiceResourceResolver());
+        } catch (final ResourceNotFoundException | PersistenceException exception) {
+          throw new CacheBuilderException(
+              String.format("%s failed to create jcr cache file for '%s'. %s",
+                  getClass().getSimpleName(), relativePath, exception.getMessage()));
+        }
+      } else {
+        throw new CacheBuilderException(String.format(
+            "%s failed to create jcr cache file for %s due to closed service resourceResolver.",
+            getClass().getSimpleName(), relativePath));
       }
     } else {
-      throw new CacheBuilderException(String.format(
-          "%s failed to create jcr cache file for %s due to closed service resourceResolver.",
-          getClass().getSimpleName(), relativePath));
+      throw new CacheBuilderException(
+          String.format("%s failed to create jcr cache file for %s due to null resourceResolver.",
+              getClass().getSimpleName(), relativePath));
     }
   }
 
