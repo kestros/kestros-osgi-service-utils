@@ -55,7 +55,7 @@ public abstract class JcrFileCacheService extends BaseCacheService {
 
   private final Logger log = LoggerFactory.getLogger(getClass());
 
-  private ResourceResolver serviceResourceResolver;
+  protected ResourceResolver serviceResourceResolver;
 
   /**
    * Root Resource path to build the cache from. If /content/sites/page is cached, it will cache to
