@@ -76,11 +76,6 @@ public abstract class JcrFileCacheService extends BaseCacheService {
   public void activate() {
     serviceResourceResolver = getOpenServiceResourceResolverOrNullAndLogExceptions(
         getServiceUserName(), getServiceResourceResolver(), getResourceResolverFactory(), this);
-    try {
-      purgeAll(getServiceResourceResolver());
-    } catch (final CachePurgeException e) {
-      log.error(e.getMessage());
-    }
   }
 
   /**
