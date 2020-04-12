@@ -36,6 +36,8 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class BaseCacheService implements CacheService, ManagedCacheService {
 
+  private static final long serialVersionUID = -4534057590200718400L;
+
   private boolean isLive;
   private Date lastPurged;
   private String lastPurgedBy;
@@ -48,7 +50,7 @@ public abstract class BaseCacheService implements CacheService, ManagedCacheServ
    * Adds cache creation job to the job queue, if the CacheService has been configured with a
    * CacheCreationJobName.
    *
-   * @param jobProperties Property valuemap to send to the CacheService's JobConsumer, if one
+   * @param jobProperties Property valueMap to send to the CacheService's JobConsumer, if one
    *     has been configured.
    */
   public void addCacheCreationJob(final Map<String, Object> jobProperties) {
