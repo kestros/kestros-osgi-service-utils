@@ -127,11 +127,12 @@ public class OsgiServiceUtils {
    * @param <T> Generic type.
    * @return All Services which are registered to the specified service class.
    */
+  @SuppressWarnings("unchecked")
   @Nonnull
   public static <T> List<T> getAllOsgiServicesOfType(final ComponentContext componentContext,
       final Class<T> type) {
-    final ServiceTracker serviceTracker = new ServiceTracker(componentContext.getBundleContext(),
-        type, null);
+    final ServiceTracker serviceTracker = new ServiceTracker(
+        componentContext.getBundleContext(), type, null);
     return getAllOsgiServicesOfType(type.getName(), serviceTracker);
   }
 
@@ -143,6 +144,7 @@ public class OsgiServiceUtils {
    * @param <T> Generic type.
    * @return All Services which are registered to the specified service class.
    */
+  @SuppressWarnings("unchecked")
   @Nonnull
   public static <T> List<T> getAllOsgiServicesOfType(final ComponentContext componentContext,
       final String serviceClassName) {
@@ -152,6 +154,7 @@ public class OsgiServiceUtils {
     return getAllOsgiServicesOfType(serviceClassName, serviceTracker);
   }
 
+  @SuppressWarnings("unchecked")
   @Nonnull
   private static <T> List<T> getAllOsgiServicesOfType(@Nonnull final String serviceName,
       @Nonnull final ServiceTracker serviceTracker) {
