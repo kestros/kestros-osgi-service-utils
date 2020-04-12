@@ -53,6 +53,8 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class JcrFileCacheService extends BaseCacheService {
 
+  private static final long serialVersionUID = 7012577452405327834L;
+
   private final Logger log = LoggerFactory.getLogger(getClass());
 
   protected ResourceResolver serviceResourceResolver;
