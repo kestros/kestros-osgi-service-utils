@@ -53,9 +53,11 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class JcrFileCacheService extends BaseCacheService {
 
+  private static final long serialVersionUID = 7012577452405327834L;
+
   private final Logger log = LoggerFactory.getLogger(getClass());
 
-  private ResourceResolver serviceResourceResolver;
+  protected ResourceResolver serviceResourceResolver;
 
   /**
    * Root Resource path to build the cache from. If /content/sites/page is cached, it will cache to
@@ -76,11 +78,6 @@ public abstract class JcrFileCacheService extends BaseCacheService {
   public void activate() {
     serviceResourceResolver = getOpenServiceResourceResolverOrNullAndLogExceptions(
         getServiceUserName(), getServiceResourceResolver(), getResourceResolverFactory(), this);
-    try {
-      purgeAll(getServiceResourceResolver());
-    } catch (final CachePurgeException e) {
-      log.error(e.getMessage());
-    }
   }
 
   /**
