@@ -43,6 +43,7 @@ import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
+import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Deactivate;
 import org.slf4j.Logger;
@@ -73,18 +74,20 @@ public abstract class JcrFileCacheService extends BaseCacheService {
 
   /**
    * Activates Cache service. Opens service ResourceResolver, which is used to build cached files.
+   * @param componentContext ComponentContext.
    */
   @Activate
-  public void activate() {
+  public void activate(ComponentContext componentContext) {
     serviceResourceResolver = getOpenServiceResourceResolverOrNullAndLogExceptions(
         getServiceUserName(), getServiceResourceResolver(), getResourceResolverFactory(), this);
   }
 
   /**
    * Deactivates the service and closes the associated service ResourceResolver.
+   * @param componentContext ComponentContext.
    */
   @Deactivate
-  public void deactivate() {
+  public void deactivate(ComponentContext componentContext) {
     try {
       purgeAll(getServiceResourceResolver());
     } catch (final CachePurgeException e) {
