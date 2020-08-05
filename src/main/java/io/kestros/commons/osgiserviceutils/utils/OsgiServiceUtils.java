@@ -120,6 +120,23 @@ public class OsgiServiceUtils {
   }
 
   /**
+   * Retrieves the top ranked service registered to a specified class.
+   *
+   * @param componentContext Component Context.
+   * @param type Service class to retrieve instances of.
+   * @param <T> Generic Type.
+   * @return The top ranked service registered to a specified class.
+   */
+  public static <T> T getOsgiServiceOfType(ComponentContext componentContext, Class<T> type) {
+    final ServiceTracker serviceTracker = new ServiceTracker(componentContext.getBundleContext(),
+        type.getName(), null);
+    serviceTracker.open();
+    T service = (T) serviceTracker.getService();
+    serviceTracker.close();
+    return service;
+  }
+
+  /**
    * Retrieves all Services which are registered to the specified service class.
    *
    * @param componentContext componentContext
@@ -131,8 +148,8 @@ public class OsgiServiceUtils {
   @Nonnull
   public static <T> List<T> getAllOsgiServicesOfType(final ComponentContext componentContext,
       final Class<T> type) {
-    final ServiceTracker serviceTracker = new ServiceTracker(
-        componentContext.getBundleContext(), type, null);
+    final ServiceTracker serviceTracker = new ServiceTracker(componentContext.getBundleContext(),
+        type, null);
     return getAllOsgiServicesOfType(type.getName(), serviceTracker);
   }
 
