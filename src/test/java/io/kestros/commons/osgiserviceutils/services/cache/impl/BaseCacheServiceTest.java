@@ -190,7 +190,7 @@ public class BaseCacheServiceTest {
 
   @Test
   public void testGetJobManager() {
-    baseCacheService.activate();
+    baseCacheService.activate(context.componentContext());
     assertEquals(jobManager, baseCacheService.getJobManager());
   }
 }
