@@ -83,7 +83,6 @@ public abstract class BaseCacheService implements CacheService, ManagedCacheServ
     }
   }
 
-
   @Override
   public void enable(final ResourceResolver resourceResolver) throws CachePurgeException {
     this.purgeAll(resourceResolver);
