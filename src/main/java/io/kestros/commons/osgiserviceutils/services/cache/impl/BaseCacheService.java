@@ -75,11 +75,17 @@ public abstract class BaseCacheService implements CacheService, ManagedCacheServ
 
   @Override
   public void purgeAll(final ResourceResolver resourceResolver) throws CachePurgeException {
-    if (isCachePurgeTimeoutExpired() && resourceResolver != null) {
-      this.lastPurged = new Date();
-      this.lastPurgedBy = resourceResolver.getUserID();
-      doPurge(resourceResolver);
-      this.afterCachePurgeComplete(resourceResolver);
+    if (resourceResolver != null && resourceResolver.isLive()) {
+      if (isCachePurgeTimeoutExpired()) {
+        this.lastPurged = new Date();
+        this.lastPurgedBy = resourceResolver.getUserID();
+        doPurge(resourceResolver);
+        this.afterCachePurgeComplete(resourceResolver);
+      }
+    } else {
+      throw new CachePurgeException(String.format(
+          "Failed to purge cache %s. Resource Resolver was either null, or already closed.",
+          getDisplayName()));
     }
   }
 
