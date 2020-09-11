@@ -70,9 +70,16 @@ public class OsgiServiceUtils {
       final Map<String, Object> params = Collections.singletonMap(
           ResourceResolverFactory.SUBSERVICE, serviceName);
 
-      resourceResolver = resourceResolverFactory.getServiceResourceResolver(params);
-      LOG.info("Opened service user {} resourceResolver for service {}.", serviceName,
-          service.getClass().getSimpleName());
+      if (resourceResolverFactory != null) {
+        resourceResolver = resourceResolverFactory.getServiceResourceResolver(params);
+        LOG.info("Opened service user {} resourceResolver for service {}.", serviceName,
+            service.getClass().getSimpleName());
+      } else {
+        LOG.warn("Failed to open service user {} resourceResolver for service {}. "
+                 + "ResourceResolverFactory was null.", serviceName,
+            service.getClass().getSimpleName());
+        throw new LoginException();
+      }
     }
     return resourceResolver;
   }
