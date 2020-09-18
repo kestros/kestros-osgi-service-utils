@@ -85,7 +85,7 @@ public class JcrFileCacheServiceTest {
   @Test
   public void testActivate() throws LoginException {
     assertNull(jcrFileCacheService.getServiceResourceResolver());
-    jcrFileCacheService.activate();
+    jcrFileCacheService.activate(context.componentContext());
     assertNotNull(jcrFileCacheService.getServiceResourceResolver());
     assertEquals("test-jcr-cache-service-user",
         jcrFileCacheService.getServiceResourceResolver().getUserID());
@@ -100,16 +100,16 @@ public class JcrFileCacheServiceTest {
     assertNull(jcrFileCacheService.getServiceResourceResolver());
     when(resourceResolverFactory.getServiceResourceResolver(any())).thenThrow(LoginException.class);
 
-    jcrFileCacheService.activate();
+    jcrFileCacheService.activate(context.componentContext());
     assertNull(jcrFileCacheService.getServiceResourceResolver());
   }
 
   @Test
   public void testDeactivate() {
-    jcrFileCacheService.activate();
+    jcrFileCacheService.activate(context.componentContext());
     assertNotNull(jcrFileCacheService.getServiceResourceResolver());
 
-    jcrFileCacheService.deactivate();
+    jcrFileCacheService.deactivate(context.componentContext());
     verify(resourceResolver, times(1)).close();
   }
 
@@ -122,7 +122,7 @@ public class JcrFileCacheServiceTest {
   public void getCachedFile()
       throws ResourceNotFoundException, InvalidResourceTypeException, CacheBuilderException,
              PersistenceException {
-    jcrFileCacheService.activate();
+    jcrFileCacheService.activate(context.componentContext());
     jcrFileCacheService.createCacheFile("Cache Content", "/resource/new-cache-file",
         SAMPLE_FILE_TYPE);
 
@@ -133,7 +133,7 @@ public class JcrFileCacheServiceTest {
 
   @Test
   public void getCachedFileWhenServiceResourceResolverIsNotLive() {
-    jcrFileCacheService.activate();
+    jcrFileCacheService.activate(context.componentContext());
     when(resourceResolver.isLive()).thenReturn(false);
     try {
       jcrFileCacheService.createCacheFile("Cache Content", "/resource/new-cache-file",
@@ -150,7 +150,7 @@ public class JcrFileCacheServiceTest {
 
   @Test
   public void getCachedFileWhenRelativePathDoesNotStartWithSlash() throws PersistenceException {
-    jcrFileCacheService.activate();
+    jcrFileCacheService.activate(context.componentContext());
     try {
       jcrFileCacheService.createCacheFile("Cache Content", "resource/new-cache-file",
           SAMPLE_FILE_TYPE);
@@ -178,7 +178,7 @@ public class JcrFileCacheServiceTest {
   @Test
   public void getCachedFileWhenCreateResourcesFromPathFails()
       throws ResourceNotFoundException, PersistenceException {
-    jcrFileCacheService.activate();
+    jcrFileCacheService.activate(context.componentContext());
     Exception exception = null;
     doThrow(new ResourceNotFoundException("resource")).when(
         jcrFileCacheService).createResourcesFromPath(any(), any());
@@ -198,7 +198,7 @@ public class JcrFileCacheServiceTest {
   @Test
   public void getCachedFileWhenCacheRootResourceNotFound() throws PersistenceException {
     context.resourceResolver().delete(context.resourceResolver().getResource("/var/cache/test"));
-    jcrFileCacheService.activate();
+    jcrFileCacheService.activate(context.componentContext());
     try {
       jcrFileCacheService.createCacheFile("Cache Content", "/resource/new-cache-file",
           SAMPLE_FILE_TYPE);
@@ -216,7 +216,7 @@ public class JcrFileCacheServiceTest {
   @Test
   public void getCachedFileWhenMultipleCachedFiles()
       throws ResourceNotFoundException, InvalidResourceTypeException, CacheBuilderException {
-    jcrFileCacheService.activate();
+    jcrFileCacheService.activate(context.componentContext());
     jcrFileCacheService.createCacheFile("Cache Content-1", "/resource/new-cache-file-1",
         SAMPLE_FILE_TYPE);
     jcrFileCacheService.createCacheFile("Cache Content-2", "/resource/new-cache-file-2",
@@ -240,7 +240,7 @@ public class JcrFileCacheServiceTest {
 
   @Test
   public void testIsFileCached() throws CacheBuilderException {
-    jcrFileCacheService.activate();
+    jcrFileCacheService.activate(context.componentContext());
 
     jcrFileCacheService.createCacheFile("Cache Content", "/resource/new-cache-file",
         SAMPLE_FILE_TYPE);
@@ -252,7 +252,7 @@ public class JcrFileCacheServiceTest {
   @Test
   public void testDoPurge()
       throws CachePurgeException, CacheBuilderException, PersistenceException {
-    jcrFileCacheService.activate();
+    jcrFileCacheService.activate(context.componentContext());
     verify(resourceResolver, never()).commit();
     jcrFileCacheService.createCacheFile("Cache Content", "/resource/new-cache-file",
         SAMPLE_FILE_TYPE);
@@ -267,7 +267,7 @@ public class JcrFileCacheServiceTest {
   @Test
   public void testDoPurgeWhenDeletePersistenceException()
       throws CacheBuilderException, PersistenceException, CachePurgeException {
-    jcrFileCacheService.activate();
+    jcrFileCacheService.activate(context.componentContext());
     verify(resourceResolver, never()).commit();
     jcrFileCacheService.createCacheFile("Cache Content", "/resource/new-cache-file",
         SAMPLE_FILE_TYPE);
@@ -282,7 +282,7 @@ public class JcrFileCacheServiceTest {
 
   @Test
   public void testDoPurgeWhenServiceCacheRootResourceIsMissing() throws PersistenceException {
-    jcrFileCacheService.activate();
+    jcrFileCacheService.activate(context.componentContext());
     verify(resourceResolver, never()).commit();
     Exception exception = null;
 
@@ -306,7 +306,7 @@ public class JcrFileCacheServiceTest {
   @Test
   public void testDoPurgeWhenMultipleFiles()
       throws CachePurgeException, CacheBuilderException, PersistenceException {
-    jcrFileCacheService.activate();
+    jcrFileCacheService.activate(context.componentContext());
     verify(resourceResolver, never()).commit();
     jcrFileCacheService.createCacheFile("Cache Content", "/resource/new-cache-file",
         SAMPLE_FILE_TYPE);
@@ -325,7 +325,7 @@ public class JcrFileCacheServiceTest {
   @Test
   public void testDoPurgeWhenMultipleDirectChildren()
       throws CachePurgeException, CacheBuilderException, PersistenceException {
-    jcrFileCacheService.activate();
+    jcrFileCacheService.activate(context.componentContext());
     verify(resourceResolver, never()).commit();
     jcrFileCacheService.createCacheFile("Cache Content", "/new-cache-file", SAMPLE_FILE_TYPE);
     jcrFileCacheService.createCacheFile("Cache Content", "/new-cache-file-2", SAMPLE_FILE_TYPE);
@@ -342,7 +342,7 @@ public class JcrFileCacheServiceTest {
   @Test
   public void testDoPurgeWhenCacheRootResourceDoesNotExist()
       throws CacheBuilderException, PersistenceException {
-    jcrFileCacheService.activate();
+    jcrFileCacheService.activate(context.componentContext());
     jcrFileCacheService.createCacheFile("Cache Content", "/resource/new-cache-file",
         SAMPLE_FILE_TYPE);
     Resource cacheRootResource = context.resourceResolver().getResource(

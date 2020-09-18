@@ -19,6 +19,7 @@
 
 package io.kestros.commons.osgiserviceutils.services.cache.impl;
 
+import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.event.jobs.JobManager;
 import org.osgi.service.component.annotations.Reference;
@@ -54,6 +55,11 @@ public class SampleJcrCacheService extends JcrFileCacheService {
   @Override
   public JobManager getJobManager() {
     return jobManager;
+  }
+
+  @Override
+  protected void afterCachePurgeComplete(ResourceResolver resourceResolver) {
+    this.getDisplayName();
   }
 
   @Override

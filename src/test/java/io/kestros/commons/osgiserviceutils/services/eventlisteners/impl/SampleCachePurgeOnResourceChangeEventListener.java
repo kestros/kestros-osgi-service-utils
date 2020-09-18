@@ -54,6 +54,11 @@ public class SampleCachePurgeOnResourceChangeEventListener
   }
 
   @Override
+  protected boolean purgeOnActivation() {
+    return false;
+  }
+
+  @Override
   public <T extends CacheService> List<T> getCacheServices() {
     return Arrays.asList((T) cacheService);
   }

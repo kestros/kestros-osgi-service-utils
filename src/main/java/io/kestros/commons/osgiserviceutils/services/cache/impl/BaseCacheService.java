@@ -47,6 +47,13 @@ public abstract class BaseCacheService implements CacheService, ManagedCacheServ
   protected abstract void doPurge(ResourceResolver resourceResolver) throws CachePurgeException;
 
   /**
+   * Logic run after cache purge is completed.
+   *
+   * @param resourceResolver ResourceResolver.
+   */
+  protected abstract void afterCachePurgeComplete(ResourceResolver resourceResolver);
+
+  /**
    * Adds cache creation job to the job queue, if the CacheService has been configured with a
    * CacheCreationJobName.
    *
@@ -68,12 +75,17 @@ public abstract class BaseCacheService implements CacheService, ManagedCacheServ
 
   @Override
   public void purgeAll(final ResourceResolver resourceResolver) throws CachePurgeException {
-    if (isCachePurgeTimeoutExpired()) {
-      this.lastPurged = new Date();
-      if (resourceResolver != null) {
+    if (resourceResolver != null && resourceResolver.isLive()) {
+      if (isCachePurgeTimeoutExpired()) {
+        this.lastPurged = new Date();
         this.lastPurgedBy = resourceResolver.getUserID();
         doPurge(resourceResolver);
+        this.afterCachePurgeComplete(resourceResolver);
       }
+    } else {
+      throw new CachePurgeException(String.format(
+          "Failed to purge cache %s. Resource Resolver was either null, or already closed.",
+          getDisplayName()));
     }
   }
 

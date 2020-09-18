@@ -23,6 +23,7 @@ import io.kestros.commons.osgiserviceutils.exceptions.CachePurgeException;
 import java.io.Serializable;
 import java.util.Date;
 import org.apache.sling.api.resource.ResourceResolver;
+import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Deactivate;
 
@@ -33,15 +34,19 @@ public interface CacheService extends Serializable {
 
   /**
    * Activates the CacheService.
+   *
+   * @param componentContext ComponentContext.
    */
   @Activate
-  void activate();
+  void activate(ComponentContext componentContext);
 
   /**
    * Deactivates the Cache Service.
+   *
+   * @param componentContext ComponentContext.
    */
   @Deactivate
-  void deactivate();
+  void deactivate(ComponentContext componentContext);
 
   /**
    * Name of cache, to be displayed within a UI.
