@@ -22,6 +22,7 @@ package io.kestros.commons.osgiserviceutils.services.cache.impl;
 import io.kestros.commons.osgiserviceutils.exceptions.CachePurgeException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.event.jobs.JobManager;
+import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Reference;
 
 public class SampleCacheService extends BaseCacheService {
@@ -32,6 +33,11 @@ public class SampleCacheService extends BaseCacheService {
   @Override
   protected void doPurge(ResourceResolver resourceResolver) throws CachePurgeException {
     // Do nothing.
+  }
+
+  @Override
+  protected void afterCachePurgeComplete(ResourceResolver resourceResolver) {
+    this.getDisplayName();
   }
 
   @Override
@@ -50,11 +56,11 @@ public class SampleCacheService extends BaseCacheService {
   }
 
   @Override
-  public void activate() {
+  public void activate(ComponentContext componentContext) {
   }
 
   @Override
-  public void deactivate() {
+  public void deactivate(ComponentContext componentContext) {
   }
 
   @Override

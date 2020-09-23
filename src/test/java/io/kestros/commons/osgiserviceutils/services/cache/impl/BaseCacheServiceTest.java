@@ -68,6 +68,7 @@ public class BaseCacheServiceTest {
 
     when(resourceResolver.getUserID()).thenReturn("test-user");
     doReturn(jobManager).when(baseCacheService).getJobManager();
+    when(resourceResolver.isLive()).thenReturn(true);
   }
 
   @Test
@@ -190,7 +191,7 @@ public class BaseCacheServiceTest {
 
   @Test
   public void testGetJobManager() {
-    baseCacheService.activate();
+    baseCacheService.activate(context.componentContext());
     assertEquals(jobManager, baseCacheService.getJobManager());
   }
 }

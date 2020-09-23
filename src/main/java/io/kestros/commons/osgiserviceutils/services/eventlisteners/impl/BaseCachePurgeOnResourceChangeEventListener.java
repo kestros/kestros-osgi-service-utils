@@ -25,6 +25,7 @@ import static io.kestros.commons.osgiserviceutils.utils.OsgiServiceUtils.getOpen
 import io.kestros.commons.osgiserviceutils.exceptions.CachePurgeException;
 import io.kestros.commons.osgiserviceutils.services.cache.CacheService;
 import io.kestros.commons.osgiserviceutils.services.eventlisteners.CachePurgeOnResourceChangeEventListener;
+import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nonnull;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -49,6 +50,8 @@ public abstract class BaseCachePurgeOnResourceChangeEventListener
 
   protected abstract String getServiceUserName();
 
+  protected abstract boolean purgeOnActivation();
+
   /**
    * Activates event lister service. Opens ResourceResolver for service user.
    *
@@ -59,6 +62,9 @@ public abstract class BaseCachePurgeOnResourceChangeEventListener
     serviceResourceResolver = getOpenServiceResourceResolverOrNullAndLogExceptions(
         getServiceUserName(), getServiceResourceResolver(), getResourceResolverFactory(), this);
     componentContext = ctx;
+    if (this.purgeOnActivation()) {
+      this.onChange(Collections.EMPTY_LIST);
+    }
   }
 
   /**
