@@ -19,36 +19,28 @@
 
 package io.kestros.commons.osgiserviceutils.services.eventlisteners.impl;
 
-import static io.kestros.commons.osgiserviceutils.utils.OsgiServiceUtils.closeServiceResourceResolver;
-import static io.kestros.commons.osgiserviceutils.utils.OsgiServiceUtils.getOpenServiceResourceResolverOrNullAndLogExceptions;
-
 import io.kestros.commons.osgiserviceutils.exceptions.CachePurgeException;
+import io.kestros.commons.osgiserviceutils.services.BaseServiceResolverService;
 import io.kestros.commons.osgiserviceutils.services.cache.CacheService;
 import io.kestros.commons.osgiserviceutils.services.eventlisteners.CachePurgeOnResourceChangeEventListener;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.observation.ResourceChange;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
-import org.osgi.service.component.annotations.Deactivate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Baseline logic for clearing cache based on a ResourceChange Event.
  */
-public abstract class BaseCachePurgeOnResourceChangeEventListener
+public abstract class BaseCachePurgeOnResourceChangeEventListener extends BaseServiceResolverService
     implements CachePurgeOnResourceChangeEventListener {
 
   protected final Logger log = LoggerFactory.getLogger(getClass());
-
-  private ComponentContext componentContext;
-
-  private ResourceResolver serviceResourceResolver;
-
-  protected abstract String getServiceUserName();
 
   protected abstract boolean purgeOnActivation();
 
@@ -59,20 +51,10 @@ public abstract class BaseCachePurgeOnResourceChangeEventListener
    */
   @Activate
   public void activate(final ComponentContext ctx) {
-    serviceResourceResolver = getOpenServiceResourceResolverOrNullAndLogExceptions(
-        getServiceUserName(), getServiceResourceResolver(), getResourceResolverFactory(), this);
-    componentContext = ctx;
+    super.activate(ctx);
     if (this.purgeOnActivation()) {
       this.onChange(Collections.EMPTY_LIST);
     }
-  }
-
-  /**
-   * Deactivates event lister service. Closes resource resolver if open.
-   */
-  @Deactivate
-  public void deactivate() {
-    closeServiceResourceResolver(getServiceResourceResolver(), this);
   }
 
   @Override
@@ -91,12 +73,9 @@ public abstract class BaseCachePurgeOnResourceChangeEventListener
     }
   }
 
-  protected ComponentContext getComponentContext() {
-    return this.componentContext;
-  }
-
-  @Nonnull
+  @Nullable
+  @Override
   protected ResourceResolver getServiceResourceResolver() {
-    return this.serviceResourceResolver;
+    return super.getServiceResourceResolver();
   }
 }

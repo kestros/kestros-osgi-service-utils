@@ -20,40 +20,15 @@
 package io.kestros.commons.osgiserviceutils.services.cache;
 
 import io.kestros.commons.osgiserviceutils.exceptions.CachePurgeException;
+import io.kestros.commons.osgiserviceutils.services.ManagedService;
 import java.io.Serializable;
 import java.util.Date;
 import org.apache.sling.api.resource.ResourceResolver;
-import org.osgi.service.component.ComponentContext;
-import org.osgi.service.component.annotations.Activate;
-import org.osgi.service.component.annotations.Deactivate;
 
 /**
  * Manages the managing, building, purging and retrieval of Cached values.
  */
-public interface CacheService extends Serializable {
-
-  /**
-   * Activates the CacheService.
-   *
-   * @param componentContext ComponentContext.
-   */
-  @Activate
-  void activate(ComponentContext componentContext);
-
-  /**
-   * Deactivates the Cache Service.
-   *
-   * @param componentContext ComponentContext.
-   */
-  @Deactivate
-  void deactivate(ComponentContext componentContext);
-
-  /**
-   * Name of cache, to be displayed within a UI.
-   *
-   * @return Displayed name of cache.
-   */
-  String getDisplayName();
+public interface CacheService extends Serializable, ManagedService {
 
   /**
    * Enables cache service to allow caching and value retrieval. Purges caches before enabling.
