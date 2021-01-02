@@ -23,6 +23,7 @@ import static io.kestros.commons.osgiserviceutils.utils.OsgiServiceUtils.closeSe
 import static io.kestros.commons.osgiserviceutils.utils.OsgiServiceUtils.getOpenServiceResourceResolverOrNullAndLogExceptions;
 
 import javax.annotation.Nullable;
+import org.apache.felix.hc.api.FormattingResultLog;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.osgi.service.component.ComponentContext;
@@ -33,7 +34,7 @@ import org.osgi.service.component.annotations.Deactivate;
  * Baseline OSGI Service which when activated, creates a ResourceResolver for a service User.  When
  * deactivated the ResourceResolver is closed.
  */
-public abstract class BaseServiceResolverService {
+public abstract class BaseServiceResolverService implements ManagedService {
 
   private ResourceResolver serviceResourceResolver;
 
@@ -59,6 +60,11 @@ public abstract class BaseServiceResolverService {
   @Deactivate
   public void deactivate() {
     closeServiceResourceResolver(getServiceResourceResolver(), this);
+  }
+
+  @Override
+  public void runAdditionalHealthChecks(FormattingResultLog log) {
+
   }
 
   protected abstract ResourceResolverFactory getResourceResolverFactory();

@@ -39,6 +39,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
+import org.apache.felix.hc.api.FormattingResultLog;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -94,6 +95,18 @@ public abstract class JcrFileCacheService extends BaseCacheService {
       log.error(e.getMessage());
     }
     closeServiceResourceResolver(getServiceResourceResolver(), this);
+  }
+
+
+  @Override
+  public void runAdditionalHealthChecks(FormattingResultLog log) {
+    if (getServiceResourceResolver() == null) {
+      log.critical("Service ResourceResolver was null.");
+    } else {
+      if (!getServiceResourceResolver().isLive()) {
+        log.critical("Service ResourceResolver is not live.");
+      }
+    }
   }
 
   /**

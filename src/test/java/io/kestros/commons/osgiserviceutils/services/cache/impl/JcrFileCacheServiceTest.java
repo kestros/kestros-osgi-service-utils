@@ -123,11 +123,11 @@ public class JcrFileCacheServiceTest {
       throws ResourceNotFoundException, InvalidResourceTypeException, CacheBuilderException,
              PersistenceException {
     jcrFileCacheService.activate(context.componentContext());
-    jcrFileCacheService.createCacheFile("Cache Content", "/resource/new-cache-file",
+    jcrFileCacheService.createCacheFile("Cache Content", "/resource/new-cache-file.sample",
         SAMPLE_FILE_TYPE);
 
-    assertEquals("/var/cache/test/resource/new-cache-file",
-        jcrFileCacheService.getCachedFile("/resource/new-cache-file", SampleFile.class).getPath());
+    assertEquals("/var/cache/test/resource/new-cache-file.sample",
+        jcrFileCacheService.getCachedFile("/resource/new-cache-file.sample", SampleFile.class).getPath());
     verify(resourceResolver, times(1)).commit();
   }
 
@@ -217,17 +217,17 @@ public class JcrFileCacheServiceTest {
   public void getCachedFileWhenMultipleCachedFiles()
       throws ResourceNotFoundException, InvalidResourceTypeException, CacheBuilderException {
     jcrFileCacheService.activate(context.componentContext());
-    jcrFileCacheService.createCacheFile("Cache Content-1", "/resource/new-cache-file-1",
+    jcrFileCacheService.createCacheFile("Cache Content-1", "/resource/new-cache-file-1.sample",
         SAMPLE_FILE_TYPE);
-    jcrFileCacheService.createCacheFile("Cache Content-2", "/resource/new-cache-file-2",
+    jcrFileCacheService.createCacheFile("Cache Content-2", "/resource/new-cache-file-2.sample",
         SAMPLE_FILE_TYPE);
 
-    assertEquals("/var/cache/test/resource/new-cache-file-1",
-        jcrFileCacheService.getCachedFile("/resource/new-cache-file-1",
+    assertEquals("/var/cache/test/resource/new-cache-file-1.sample",
+        jcrFileCacheService.getCachedFile("/resource/new-cache-file-1.sample",
             SampleFile.class).getPath());
 
-    assertEquals("/var/cache/test/resource/new-cache-file-2",
-        jcrFileCacheService.getCachedFile("/resource/new-cache-file-2",
+    assertEquals("/var/cache/test/resource/new-cache-file-2.sample",
+        jcrFileCacheService.getCachedFile("/resource/new-cache-file-2.sample",
             SampleFile.class).getPath());
   }
 
@@ -236,7 +236,6 @@ public class JcrFileCacheServiceTest {
     assertEquals("/var/cache/test",
         jcrFileCacheService.getParentPathFromPath("/var/cache/test/resource"));
   }
-
 
   @Test
   public void testIsFileCached() throws CacheBuilderException {
