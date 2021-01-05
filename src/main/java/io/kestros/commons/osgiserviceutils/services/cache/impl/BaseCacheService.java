@@ -38,7 +38,7 @@ public abstract class BaseCacheService implements CacheService, ManagedCacheServ
 
   private static final long serialVersionUID = -4534057590200718400L;
 
-  private boolean isLive;
+  private boolean isLive = true;
   private Date lastPurged;
   private String lastPurgedBy;
 
