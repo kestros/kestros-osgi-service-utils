@@ -108,9 +108,10 @@ public abstract class JcrFileCacheService extends BaseCacheService {
       if (!getServiceResourceResolver().isLive()) {
         log.critical("Service ResourceResolver is not live.");
       } else {
-        for(String requiredResourcePath : getRequiredResourcePaths()) {
-          if(getServiceResourceResolver().getResource(requiredResourcePath) == null) {
-            log.critical(String.format("Required resource %s was not found.", requiredResourcePath));
+        for (String requiredResourcePath : getRequiredResourcePaths()) {
+          if (getServiceResourceResolver().getResource(requiredResourcePath) == null) {
+            log.critical(
+                String.format("Required resource %s was not found.", requiredResourcePath));
           }
         }
       }
