@@ -64,7 +64,11 @@ public abstract class BaseServiceResolverService implements ManagedService {
 
   @Override
   public void runAdditionalHealthChecks(FormattingResultLog log) {
-
+    if (getServiceResourceResolver() == null) {
+      log.critical("Service ResourceResolver is null.");
+    } else if (!getServiceResourceResolver().isLive()) {
+      log.critical("Service ResourceResolver has closed.");
+    }
   }
 
   protected abstract ResourceResolverFactory getResourceResolverFactory();
