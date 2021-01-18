@@ -30,7 +30,7 @@
   </parent>
 
   <artifactId>kestros-osgi-service-utils</artifactId>
-  <version>0.1.2-SNAPSHOT</version>
+  <version>0.1.2</version>
 
   <packaging>bundle</packaging>
 
