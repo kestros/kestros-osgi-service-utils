@@ -21,7 +21,11 @@ package io.kestros.commons.osgiserviceutils.services;
 
 import static io.kestros.commons.osgiserviceutils.utils.OsgiServiceUtils.closeServiceResourceResolver;
 import static io.kestros.commons.osgiserviceutils.utils.OsgiServiceUtils.getOpenServiceResourceResolverOrNullAndLogExceptions;
+import static io.kestros.commons.structuredslingmodels.utils.SlingModelUtils.getResourceAsBaseResource;
 
+import io.kestros.commons.structuredslingmodels.BaseResource;
+import io.kestros.commons.structuredslingmodels.exceptions.ResourceNotFoundException;
+import java.util.List;
 import javax.annotation.Nullable;
 import org.apache.felix.hc.api.FormattingResultLog;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -68,8 +72,20 @@ public abstract class BaseServiceResolverService implements ManagedService {
       log.critical("Service ResourceResolver is null.");
     } else if (!getServiceResourceResolver().isLive()) {
       log.critical("Service ResourceResolver has closed.");
+    } else {
+      for (String path : getRequiredResourcePaths()) {
+        try {
+          BaseResource requiredResource = getResourceAsBaseResource(path,
+              getServiceResourceResolver());
+          log.debug(String.format("Found resource at path %s", requiredResource.getPath()));
+        } catch (ResourceNotFoundException e) {
+          log.critical(String.format("Failed to find resource at path %s", path));
+        }
+      }
     }
   }
+
+  protected abstract List<String> getRequiredResourcePaths();
 
   protected abstract ResourceResolverFactory getResourceResolverFactory();
 
