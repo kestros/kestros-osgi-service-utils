@@ -216,6 +216,38 @@ public abstract class JcrFileCacheService extends BaseCacheService {
     }
   }
 
+  protected void doPurge(String resourcePath, final ResourceResolver resourceResolver)
+      throws CachePurgeException {
+    if (getServiceResourceResolver() != null) {
+      final Resource serviceCacheRootResource = getServiceResourceResolver().getResource(
+          getServiceCacheRootPath());
+      log.info("{} purging cache.", getClass().getSimpleName());
+      if (serviceCacheRootResource != null) {
+        List<BaseResource> resourceToPurgeList = getChildrenAsBaseResource(
+            serviceCacheRootResource);
+        log.debug("Purging {} top level resource.", resourceToPurgeList.size());
+        for (final BaseResource cacheRootChild : resourceToPurgeList) {
+          if (!cacheRootChild.getName().equals("rep:policy")) {
+            try {
+              getServiceResourceResolver().delete(cacheRootChild.getResource());
+              getServiceResourceResolver().commit();
+            } catch (final PersistenceException exception) {
+              log.warn("Unable to delete {} while purging cache.", cacheRootChild.getPath());
+            }
+          }
+        }
+        log.info("{} successfully purged cache.", getClass().getSimpleName());
+      } else {
+        throw new CachePurgeException(
+            "Failed to purge cache " + getClass().getSimpleName() + ". Cache root resource "
+            + getServiceCacheRootPath() + " not found.");
+      }
+    } else {
+      throw new CachePurgeException("Failed to purge cache " + getClass().getSimpleName()
+                                    + ". Null service ResourceResolver.");
+    }
+  }
+
   String getParentPathFromPath(final String path) {
     return path.substring(0, path.lastIndexOf('/'));
   }
