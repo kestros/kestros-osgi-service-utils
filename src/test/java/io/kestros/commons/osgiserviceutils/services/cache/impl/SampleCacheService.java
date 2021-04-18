@@ -20,6 +20,7 @@
 package io.kestros.commons.osgiserviceutils.services.cache.impl;
 
 import io.kestros.commons.osgiserviceutils.exceptions.CachePurgeException;
+import org.apache.felix.hc.api.FormattingResultLog;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.event.jobs.JobManager;
 import org.osgi.service.component.ComponentContext;
@@ -66,5 +67,9 @@ public class SampleCacheService extends BaseCacheService {
   @Override
   public String getDisplayName() {
     return "sample cache service";
+  }
+
+  @Override
+  public void runAdditionalHealthChecks(FormattingResultLog log) {
   }
 }

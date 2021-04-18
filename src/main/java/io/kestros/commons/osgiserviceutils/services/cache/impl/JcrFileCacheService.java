@@ -39,6 +39,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
+import org.apache.felix.hc.api.FormattingResultLog;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -72,6 +73,8 @@ public abstract class JcrFileCacheService extends BaseCacheService {
 
   protected abstract ResourceResolverFactory getResourceResolverFactory();
 
+  protected abstract List<String> getRequiredResourcePaths();
+
   /**
    * Activates Cache service. Opens service ResourceResolver, which is used to build cached files.
    * @param componentContext ComponentContext.
@@ -94,6 +97,25 @@ public abstract class JcrFileCacheService extends BaseCacheService {
       log.error(e.getMessage());
     }
     closeServiceResourceResolver(getServiceResourceResolver(), this);
+  }
+
+
+  @Override
+  public void runAdditionalHealthChecks(FormattingResultLog log) {
+    if (getServiceResourceResolver() == null) {
+      log.critical("Service ResourceResolver was null.");
+    } else {
+      if (!getServiceResourceResolver().isLive()) {
+        log.critical("Service ResourceResolver is not live.");
+      } else {
+        for (String requiredResourcePath : getRequiredResourcePaths()) {
+          if (getServiceResourceResolver().getResource(requiredResourcePath) == null) {
+            log.critical(
+                String.format("Required resource %s was not found.", requiredResourcePath));
+          }
+        }
+      }
+    }
   }
 
   /**
@@ -164,6 +186,38 @@ public abstract class JcrFileCacheService extends BaseCacheService {
 
   @Override
   protected void doPurge(final ResourceResolver resourceResolver) throws CachePurgeException {
+    if (getServiceResourceResolver() != null) {
+      final Resource serviceCacheRootResource = getServiceResourceResolver().getResource(
+          getServiceCacheRootPath());
+      log.info("{} purging cache.", getClass().getSimpleName());
+      if (serviceCacheRootResource != null) {
+        List<BaseResource> resourceToPurgeList = getChildrenAsBaseResource(
+            serviceCacheRootResource);
+        log.debug("Purging {} top level resource.", resourceToPurgeList.size());
+        for (final BaseResource cacheRootChild : resourceToPurgeList) {
+          if (!cacheRootChild.getName().equals("rep:policy")) {
+            try {
+              getServiceResourceResolver().delete(cacheRootChild.getResource());
+              getServiceResourceResolver().commit();
+            } catch (final PersistenceException exception) {
+              log.warn("Unable to delete {} while purging cache.", cacheRootChild.getPath());
+            }
+          }
+        }
+        log.info("{} successfully purged cache.", getClass().getSimpleName());
+      } else {
+        throw new CachePurgeException(
+            "Failed to purge cache " + getClass().getSimpleName() + ". Cache root resource "
+            + getServiceCacheRootPath() + " not found.");
+      }
+    } else {
+      throw new CachePurgeException("Failed to purge cache " + getClass().getSimpleName()
+                                    + ". Null service ResourceResolver.");
+    }
+  }
+
+  protected void doPurge(String resourcePath, final ResourceResolver resourceResolver)
+      throws CachePurgeException {
     if (getServiceResourceResolver() != null) {
       final Resource serviceCacheRootResource = getServiceResourceResolver().getResource(
           getServiceCacheRootPath());

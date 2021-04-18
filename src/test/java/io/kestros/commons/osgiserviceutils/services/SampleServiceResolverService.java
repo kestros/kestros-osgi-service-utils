@@ -19,7 +19,10 @@
 
 package io.kestros.commons.osgiserviceutils.services;
 
+import java.util.Collections;
+import java.util.List;
 import org.apache.sling.api.resource.ResourceResolverFactory;
+import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -36,8 +39,22 @@ public class SampleServiceResolverService extends BaseServiceResolverService {
   }
 
   @Override
+  protected List<String> getRequiredResourcePaths() {
+    return Collections.emptyList();
+  }
+
+  @Override
   protected ResourceResolverFactory getResourceResolverFactory() {
     return resourceResolverFactory;
   }
 
+  @Override
+  public String getDisplayName() {
+    return "Sample Service Resolver Service";
+  }
+
+  @Override
+  public void deactivate(ComponentContext componentContext) {
+
+  }
 }

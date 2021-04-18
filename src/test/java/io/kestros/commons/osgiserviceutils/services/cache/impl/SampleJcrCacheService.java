@@ -19,6 +19,9 @@
 
 package io.kestros.commons.osgiserviceutils.services.cache.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+import org.apache.felix.hc.api.FormattingResultLog;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.event.jobs.JobManager;
@@ -48,8 +51,21 @@ public class SampleJcrCacheService extends JcrFileCacheService {
   }
 
   @Override
+  protected List<String> getRequiredResourcePaths() {
+    List<String> pathList = new ArrayList<>();
+    pathList.add("/content");
+    pathList.add("/libs");
+    return pathList;
+  }
+
+  @Override
   public String getDisplayName() {
     return "Sample Jcr Cache Service";
+  }
+
+  @Override
+  public void runAdditionalHealthChecks(FormattingResultLog log) {
+
   }
 
   @Override

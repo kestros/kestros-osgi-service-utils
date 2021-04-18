@@ -22,9 +22,12 @@ package io.kestros.commons.osgiserviceutils.services.eventlisteners.impl;
 import io.kestros.commons.osgiserviceutils.services.cache.CacheService;
 import io.kestros.commons.osgiserviceutils.services.cache.impl.SampleCacheService;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import org.apache.felix.hc.api.FormattingResultLog;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.api.resource.observation.ResourceChangeListener;
+import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
@@ -66,5 +69,25 @@ public class SampleCachePurgeOnResourceChangeEventListener
   @Override
   public ResourceResolverFactory getResourceResolverFactory() {
     return resourceResolverFactory;
+  }
+
+  @Override
+  public String getDisplayName() {
+    return "Sample Cache Purge Event Listener";
+  }
+
+  @Override
+  public void deactivate(ComponentContext componentContext) {
+
+  }
+
+  @Override
+  public void runAdditionalHealthChecks(FormattingResultLog log) {
+
+  }
+
+  @Override
+  protected List<String> getRequiredResourcePaths() {
+    return Collections.emptyList();
   }
 }

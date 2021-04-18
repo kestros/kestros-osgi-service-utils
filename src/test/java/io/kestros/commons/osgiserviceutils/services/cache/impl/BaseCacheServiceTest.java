@@ -174,7 +174,7 @@ public class BaseCacheServiceTest {
 
   @Test
   public void testIsLive() {
-    assertFalse(baseCacheService.isLive());
+    assertTrue(baseCacheService.isLive());
   }
 
   @Test
