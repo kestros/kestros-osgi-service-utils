@@ -35,7 +35,7 @@ public abstract class BaseManagedServiceHealthCheck implements HealthCheck {
    *
    * @return Service to run HealthChecks on.
    */
-  public abstract ManagedService getCacheService();
+  public abstract ManagedService getManagedService();
 
   /**
    * Name of service that is being checked.
@@ -48,13 +48,13 @@ public abstract class BaseManagedServiceHealthCheck implements HealthCheck {
   public Result execute() {
     FormattingResultLog log = new FormattingResultLog();
     log.debug(String.format("Starting Health Check for managed service."));
-    if (getCacheService() == null) {
+    if (getManagedService() == null) {
       log.critical(String.format("%s is not registered.", getServiceName()));
     } else {
-      getCacheService().runAdditionalHealthChecks(log);
+      getManagedService().runAdditionalHealthChecks(log);
       if (log.getAggregateStatus().equals(Status.OK)) {
         log.info(String.format("%s is registered and running properly.",
-            getCacheService().getDisplayName()));
+            getManagedService().getDisplayName()));
       }
     }
     return new Result(log);
