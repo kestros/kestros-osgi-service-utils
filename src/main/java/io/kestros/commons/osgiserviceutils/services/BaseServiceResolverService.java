@@ -66,6 +66,11 @@ public abstract class BaseServiceResolverService implements ManagedService {
     closeServiceResourceResolver(getServiceResourceResolver(), this);
   }
 
+  protected ResourceResolver getNewServiceResourceResolver() {
+    return getOpenServiceResourceResolverOrNullAndLogExceptions(getServiceUserName(),
+        getServiceResourceResolver(), getResourceResolverFactory(), this);
+  }
+
   @Override
   public void runAdditionalHealthChecks(FormattingResultLog log) {
     if (getServiceResourceResolver() == null) {
