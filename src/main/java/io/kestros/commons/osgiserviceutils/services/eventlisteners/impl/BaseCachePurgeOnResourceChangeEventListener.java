@@ -59,6 +59,7 @@ public abstract class BaseCachePurgeOnResourceChangeEventListener extends BaseSe
 
   @Override
   public void onChange(@Nonnull final List<ResourceChange> list) {
+    log.info("{} detected change. Clearing caches.",getClass().getSimpleName());
     for (final CacheService cacheService : getCacheServices()) {
       try {
         if (cacheService != null) {

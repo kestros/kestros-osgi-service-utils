@@ -196,6 +196,7 @@ public abstract class JcrFileCacheService extends BaseCacheService {
   @Override
   protected void doPurge(final ResourceResolver resourceResolver) throws CachePurgeException {
     if (getServiceResourceResolver() != null) {
+      resourceResolver.refresh();
       final Resource serviceCacheRootResource = resourceResolver.getResource(
           getServiceCacheRootPath());
       log.info("{} purging cache.", getClass().getSimpleName());
