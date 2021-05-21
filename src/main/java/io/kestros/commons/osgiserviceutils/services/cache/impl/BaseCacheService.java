@@ -84,7 +84,7 @@ public abstract class BaseCacheService implements CacheService, ManagedCacheServ
         this.afterCachePurgeComplete(resourceResolver);
       }
     } else {
-      log.error("{}: Failed to clear cached data.");
+      log.error("{}: Failed to clear cached data.", getDisplayName());
       throw new CachePurgeException(String.format(
           "Failed to purge cache %s. Resource Resolver was either null, or already closed.",
           getDisplayName()));
