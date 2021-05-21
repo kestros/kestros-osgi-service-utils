@@ -77,20 +77,24 @@ public abstract class JcrFileCacheService extends BaseCacheService {
 
   /**
    * Activates Cache service. Opens service ResourceResolver, which is used to build cached files.
+   *
    * @param componentContext ComponentContext.
    */
   @Activate
   public void activate(ComponentContext componentContext) {
+    log.info("Activating {}.", getDisplayName());
     serviceResourceResolver = getOpenServiceResourceResolverOrNullAndLogExceptions(
         getServiceUserName(), getServiceResourceResolver(), getResourceResolverFactory(), this);
   }
 
   /**
    * Deactivates the service and closes the associated service ResourceResolver.
+   *
    * @param componentContext ComponentContext.
    */
   @Deactivate
   public void deactivate(ComponentContext componentContext) {
+    log.info("Deactivating {}.", getDisplayName());
     try {
       purgeAll(getServiceResourceResolver());
     } catch (final CachePurgeException e) {
@@ -126,6 +130,11 @@ public abstract class JcrFileCacheService extends BaseCacheService {
   @Nullable
   public ResourceResolver getServiceResourceResolver() {
     return this.serviceResourceResolver;
+  }
+
+  protected ResourceResolver getNewServiceResourceResolver() {
+    return getOpenServiceResourceResolverOrNullAndLogExceptions(getServiceUserName(),
+        getServiceResourceResolver(), getResourceResolverFactory(), this);
   }
 
   protected void createCacheFile(final String content, final String relativePath,
@@ -187,7 +196,8 @@ public abstract class JcrFileCacheService extends BaseCacheService {
   @Override
   protected void doPurge(final ResourceResolver resourceResolver) throws CachePurgeException {
     if (getServiceResourceResolver() != null) {
-      final Resource serviceCacheRootResource = getServiceResourceResolver().getResource(
+      resourceResolver.refresh();
+      final Resource serviceCacheRootResource = resourceResolver.getResource(
           getServiceCacheRootPath());
       log.info("{} purging cache.", getClass().getSimpleName());
       if (serviceCacheRootResource != null) {
@@ -197,8 +207,8 @@ public abstract class JcrFileCacheService extends BaseCacheService {
         for (final BaseResource cacheRootChild : resourceToPurgeList) {
           if (!cacheRootChild.getName().equals("rep:policy")) {
             try {
-              getServiceResourceResolver().delete(cacheRootChild.getResource());
-              getServiceResourceResolver().commit();
+              resourceResolver.delete(cacheRootChild.getResource());
+              resourceResolver.commit();
             } catch (final PersistenceException exception) {
               log.warn("Unable to delete {} while purging cache.", cacheRootChild.getPath());
             }

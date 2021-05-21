@@ -76,7 +76,7 @@ public class BaseServiceResolverServiceTest {
   @Test
   public void testDeactivate() {
     serviceResolverService.activate(context.componentContext());
-    serviceResolverService.deactivate();
+    serviceResolverService.deactivate(context.componentContext());
     verify(resourceResolver, times(1)).close();
   }
 

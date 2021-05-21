@@ -75,6 +75,7 @@ public abstract class BaseCacheService implements CacheService, ManagedCacheServ
 
   @Override
   public void purgeAll(final ResourceResolver resourceResolver) throws CachePurgeException {
+    log.info("{}: Clearing all cached data.", getDisplayName());
     if (resourceResolver != null && resourceResolver.isLive()) {
       if (isCachePurgeTimeoutExpired()) {
         this.lastPurged = new Date();
@@ -83,6 +84,7 @@ public abstract class BaseCacheService implements CacheService, ManagedCacheServ
         this.afterCachePurgeComplete(resourceResolver);
       }
     } else {
+      log.error("{}: Failed to clear cached data.", getDisplayName());
       throw new CachePurgeException(String.format(
           "Failed to purge cache %s. Resource Resolver was either null, or already closed.",
           getDisplayName()));

@@ -60,10 +60,17 @@ public abstract class BaseServiceResolverService implements ManagedService {
 
   /**
    * Deactivates the Service and closes the Service ResourceResolver.
+   *
+   * @param componentContext ComponentContext.
    */
   @Deactivate
-  public void deactivate() {
+  public void deactivate(ComponentContext componentContext) {
     closeServiceResourceResolver(getServiceResourceResolver(), this);
+  }
+
+  protected ResourceResolver getNewServiceResourceResolver() {
+    return getOpenServiceResourceResolverOrNullAndLogExceptions(getServiceUserName(),
+        getServiceResourceResolver(), getResourceResolverFactory(), this);
   }
 
   @Override

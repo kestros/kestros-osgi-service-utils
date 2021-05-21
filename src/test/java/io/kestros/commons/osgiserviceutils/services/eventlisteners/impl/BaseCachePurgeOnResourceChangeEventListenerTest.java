@@ -126,7 +126,7 @@ public class BaseCachePurgeOnResourceChangeEventListenerTest {
     when(serviceResourceResolver.isLive()).thenReturn(true);
 
     eventListener.activate(context.componentContext());
-    eventListener.deactivate();
+    eventListener.deactivate(context.componentContext());
 
     assertNotNull(eventListener.getServiceResourceResolver());
     verify(serviceResourceResolver, times(1)).close();
