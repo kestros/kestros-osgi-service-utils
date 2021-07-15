@@ -26,11 +26,12 @@
   <parent>
     <groupId>io.kestros.commons</groupId>
     <artifactId>kestros-parent-strict</artifactId>
-    <version>0.2.0</version>
+    <version>0.2.1-SNAPSHOT</version>
+    <relativePath/>
   </parent>
 
   <artifactId>kestros-osgi-service-utils</artifactId>
-  <version>0.1.5.-SNAPSHOT</version>
+  <version>0.1.5-SNAPSHOT</version>
 
   <packaging>bundle</packaging>
 
@@ -48,17 +49,6 @@
     <dependency>
       <groupId>io.kestros.commons</groupId>
       <artifactId>kestros-structured-sling-models</artifactId>
-      <version>0.2.1</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.felix</groupId>
-      <artifactId>org.apache.felix.healthcheck.api</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.felix</groupId>
-      <artifactId>org.apache.felix.healthcheck.annotation</artifactId>
     </dependency>
   </dependencies>
 
