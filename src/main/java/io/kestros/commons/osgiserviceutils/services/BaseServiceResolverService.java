@@ -79,21 +79,23 @@ public abstract class BaseServiceResolverService implements ManagedService {
       log.critical("Service ResourceResolver is null.");
     } else if (!getServiceResourceResolver().isLive()) {
       log.critical("Service ResourceResolver has closed.");
-    }
-    if (getRequiredResourcePaths() != null) {
-      for (String path : getRequiredResourcePaths()) {
-        try {
-          BaseResource requiredResource = getResourceAsBaseResource(path,
-              getServiceResourceResolver());
-          log.debug(String.format("Found resource at path %s", requiredResource.getPath()));
-        } catch (ResourceNotFoundException e) {
-          log.critical(String.format("Failed to find resource at path %s", path));
-        }
-      }
     } else {
-      log.warn(
-          "Required resources paths was null. Return Collections.emptyList() if no resource paths"
-          + " are required.");
+      getServiceResourceResolver().refresh();
+      if (getRequiredResourcePaths() != null) {
+        for (String path : getRequiredResourcePaths()) {
+          try {
+            BaseResource requiredResource = getResourceAsBaseResource(path,
+                getServiceResourceResolver());
+            log.debug(String.format("Found resource at path %s", requiredResource.getPath()));
+          } catch (ResourceNotFoundException e) {
+            log.critical(String.format("Failed to find resource at path %s", path));
+          }
+        }
+      } else {
+        log.warn(
+            "Required resources paths was null. Return Collections.emptyList() if no resource paths"
+            + " are required.");
+      }
     }
   }
 
