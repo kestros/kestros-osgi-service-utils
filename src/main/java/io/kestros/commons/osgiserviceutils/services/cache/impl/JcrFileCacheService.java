@@ -196,8 +196,8 @@ public abstract class JcrFileCacheService extends BaseCacheService {
   @Override
   protected void doPurge(final ResourceResolver resourceResolver) throws CachePurgeException {
     if (getServiceResourceResolver() != null) {
-      resourceResolver.refresh();
-      final Resource serviceCacheRootResource = resourceResolver.getResource(
+      getServiceResourceResolver().refresh();
+      final Resource serviceCacheRootResource = getServiceResourceResolver().getResource(
           getServiceCacheRootPath());
       log.info("{} purging cache.", getClass().getSimpleName());
       if (serviceCacheRootResource != null) {
@@ -207,8 +207,8 @@ public abstract class JcrFileCacheService extends BaseCacheService {
         for (final BaseResource cacheRootChild : resourceToPurgeList) {
           if (!cacheRootChild.getName().equals("rep:policy")) {
             try {
-              resourceResolver.delete(cacheRootChild.getResource());
-              resourceResolver.commit();
+              getServiceResourceResolver().delete(cacheRootChild.getResource());
+              getServiceResourceResolver().commit();
             } catch (final PersistenceException exception) {
               log.warn("Unable to delete {} while purging cache.", cacheRootChild.getPath());
             }
