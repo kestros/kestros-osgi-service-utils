@@ -57,8 +57,8 @@ public abstract class BaseCacheService implements CacheService, ManagedCacheServ
    * Adds cache creation job to the job queue, if the CacheService has been configured with a
    * CacheCreationJobName.
    *
-   * @param jobProperties Property valueMap to send to the CacheService's JobConsumer, if one
-   *     has been configured.
+   * @param jobProperties Property valueMap to send to the CacheService's JobConsumer, if one has
+   *                      been configured.
    */
   public void addCacheCreationJob(final Map<String, Object> jobProperties) {
     if (getJobManager() != null && StringUtils.isNotEmpty(getCacheCreationJobName())) {
@@ -75,11 +75,11 @@ public abstract class BaseCacheService implements CacheService, ManagedCacheServ
 
   @Override
   public void purgeAll(final ResourceResolver resourceResolver) throws CachePurgeException {
-    log.info("{}: Clearing all cached data.", getDisplayName());
     if (resourceResolver != null && resourceResolver.isLive()) {
       if (isCachePurgeTimeoutExpired()) {
         this.lastPurged = new Date();
         this.lastPurgedBy = resourceResolver.getUserID();
+        log.info("{}: Clearing all cached data.", getDisplayName());
         doPurge(resourceResolver);
         this.afterCachePurgeComplete(resourceResolver);
       }
@@ -149,7 +149,7 @@ public abstract class BaseCacheService implements CacheService, ManagedCacheServ
 
   protected boolean isCachePurgeTimeoutExpired() {
     return getTimeSinceLastPurge() == null
-           || getTimeSinceLastPurge() > getMinimumTimeBetweenCachePurges();
+        || getTimeSinceLastPurge() > getMinimumTimeBetweenCachePurges();
   }
 
   private Long getTimeSinceLastPurge() {
