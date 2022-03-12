@@ -83,7 +83,7 @@ public abstract class BaseCacheService implements CacheService, ManagedCacheServ
         doPurge(resourceResolver);
         this.afterCachePurgeComplete(resourceResolver);
       } else {
-        log.trace("{}: Skipping cache purge, minimum time between purges has not elapsed.",
+        log.debug("{}: Skipping cache purge, minimum time between purges has not elapsed.",
             getDisplayName());
       }
     } else {
