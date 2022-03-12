@@ -82,6 +82,9 @@ public abstract class BaseCacheService implements CacheService, ManagedCacheServ
         log.info("{}: Clearing all cached data.", getDisplayName());
         doPurge(resourceResolver);
         this.afterCachePurgeComplete(resourceResolver);
+      } else {
+        log.trace("{}: Skipping cache purge, minimum time between purges has not elapsed.",
+            getDisplayName());
       }
     } else {
       log.error("{}: Failed to clear cached data.", getDisplayName());
@@ -149,7 +152,7 @@ public abstract class BaseCacheService implements CacheService, ManagedCacheServ
 
   protected boolean isCachePurgeTimeoutExpired() {
     return getTimeSinceLastPurge() == null
-        || getTimeSinceLastPurge() > getMinimumTimeBetweenCachePurges();
+           || getTimeSinceLastPurge() > getMinimumTimeBetweenCachePurges();
   }
 
   private Long getTimeSinceLastPurge() {
