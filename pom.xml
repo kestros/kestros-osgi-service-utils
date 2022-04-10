@@ -26,12 +26,12 @@
   <parent>
     <groupId>io.kestros.commons</groupId>
     <artifactId>kestros-parent-strict</artifactId>
-    <version>0.2.2</version>
+    <version>0.2.3</version>
     <relativePath/>
   </parent>
 
   <artifactId>kestros-osgi-service-utils</artifactId>
-  <version>0.1.6</version>
+  <version>0.1.7</version>
 
   <packaging>bundle</packaging>
 
