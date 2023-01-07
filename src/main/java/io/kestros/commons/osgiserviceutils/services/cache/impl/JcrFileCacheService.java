@@ -19,6 +19,13 @@
 
 package io.kestros.commons.osgiserviceutils.services.cache.impl;
 
+import static io.kestros.commons.osgiserviceutils.utils.ResourceCreationUtils.createTextFileResourceAndCommit;
+import static io.kestros.commons.structuredslingmodels.utils.FileModelUtils.adaptToFileType;
+import static io.kestros.commons.structuredslingmodels.utils.SlingModelUtils.adaptToBaseResource;
+import static io.kestros.commons.structuredslingmodels.utils.SlingModelUtils.getChildrenAsBaseResource;
+import static io.kestros.commons.structuredslingmodels.utils.SlingModelUtils.getResourceAsBaseResource;
+import static org.apache.jackrabbit.JcrConstants.JCR_PRIMARYTYPE;
+
 import io.kestros.commons.osgiserviceutils.exceptions.CacheBuilderException;
 import io.kestros.commons.osgiserviceutils.exceptions.CachePurgeException;
 import io.kestros.commons.structuredslingmodels.BaseResource;
@@ -40,13 +47,6 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Deactivate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static io.kestros.commons.osgiserviceutils.utils.ResourceCreationUtils.createTextFileResourceAndCommit;
-import static io.kestros.commons.structuredslingmodels.utils.FileModelUtils.adaptToFileType;
-import static io.kestros.commons.structuredslingmodels.utils.SlingModelUtils.adaptToBaseResource;
-import static io.kestros.commons.structuredslingmodels.utils.SlingModelUtils.getChildrenAsBaseResource;
-import static io.kestros.commons.structuredslingmodels.utils.SlingModelUtils.getResourceAsBaseResource;
-import static org.apache.jackrabbit.JcrConstants.JCR_PRIMARYTYPE;
 
 
 /**

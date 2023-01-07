@@ -26,8 +26,10 @@ import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.event.jobs.JobManager;
 import org.osgi.service.component.annotations.Reference;
+import org.slf4j.Logger;
 
 public class SampleJcrCacheService extends JcrFileCacheService {
+
 
   @Reference
   private ResourceResolverFactory resourceResolverFactory;
@@ -66,6 +68,11 @@ public class SampleJcrCacheService extends JcrFileCacheService {
   @Override
   public void runAdditionalHealthChecks(FormattingResultLog log) {
 
+  }
+
+  @Override
+  protected Logger getLogger() {
+    return null;
   }
 
   @Override

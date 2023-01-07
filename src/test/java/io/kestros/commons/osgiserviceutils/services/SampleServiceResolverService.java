@@ -21,9 +21,11 @@ package io.kestros.commons.osgiserviceutils.services;
 
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.Nonnull;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.slf4j.Logger;
 
 @Component(immediate = true,
            service = SampleServiceResolverService.class)
@@ -35,6 +37,12 @@ public class SampleServiceResolverService extends BaseServiceResolverService {
   @Override
   protected String getServiceUserName() {
     return "user-name";
+  }
+
+  @Nonnull
+  @Override
+  protected Logger getLogger() {
+    return null;
   }
 
   @Override

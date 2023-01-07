@@ -21,12 +21,14 @@ package io.kestros.commons.osgiserviceutils.services.cache.impl;
 
 import io.kestros.commons.osgiserviceutils.exceptions.CachePurgeException;
 import java.util.List;
+import javax.annotation.Nonnull;
 import org.apache.felix.hc.api.FormattingResultLog;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.event.jobs.JobManager;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Reference;
+import org.slf4j.Logger;
 
 public class SampleCacheService extends BaseCacheService {
 
@@ -78,6 +80,12 @@ public class SampleCacheService extends BaseCacheService {
 
   @Override
   public void runAdditionalHealthChecks(FormattingResultLog log) {
+  }
+
+  @Nonnull
+  @Override
+  protected Logger getLogger() {
+    return null;
   }
 
   @Override

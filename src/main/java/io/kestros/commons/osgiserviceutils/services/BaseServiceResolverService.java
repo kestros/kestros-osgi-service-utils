@@ -26,6 +26,7 @@ import io.kestros.commons.structuredslingmodels.exceptions.ResourceNotFoundExcep
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nonnull;
 import org.apache.felix.hc.api.FormattingResultLog;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -33,6 +34,7 @@ import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Deactivate;
+import org.slf4j.Logger;
 
 /**
  * Baseline OSGI Service which when activated, creates a ResourceResolver for a service User.  When
@@ -73,7 +75,10 @@ public abstract class BaseServiceResolverService implements ManagedService {
   public ResourceResolver getServiceResourceResolver() throws LoginException {
     final Map<String, Object> params = Collections.singletonMap(
         ResourceResolverFactory.SUBSERVICE, getServiceUserName());
-    if(getResourceResolverFactory() != null) {
+    if (getResourceResolverFactory() != null) {
+      if (getLogger() != null) {
+        getLogger().info("Getting service resource resolver for {}.", getServiceUserName());
+      }
       return getResourceResolverFactory().getServiceResourceResolver(params);
     } else {
       throw new LoginException("Resource resolver factory was null");
@@ -104,6 +109,8 @@ public abstract class BaseServiceResolverService implements ManagedService {
     }
 
   }
+
+  protected abstract Logger getLogger();
 
   protected abstract List<String> getRequiredResourcePaths();
 
