@@ -19,6 +19,17 @@
 
 package io.kestros.commons.osgiserviceutils.services.cache.impl;
 
+import io.kestros.commons.osgiserviceutils.exceptions.CachePurgeException;
+import java.util.Date;
+import java.util.HashMap;
+import org.apache.sling.api.resource.LoginException;
+import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.event.jobs.JobManager;
+import org.apache.sling.testing.mock.sling.junit.SlingContext;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -32,16 +43,6 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import io.kestros.commons.osgiserviceutils.exceptions.CachePurgeException;
-import java.util.Date;
-import java.util.HashMap;
-import org.apache.sling.api.resource.ResourceResolver;
-import org.apache.sling.event.jobs.JobManager;
-import org.apache.sling.testing.mock.sling.junit.SlingContext;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
 
 public class BaseCacheServiceTest {
 
@@ -72,9 +73,10 @@ public class BaseCacheServiceTest {
   }
 
   @Test
-  public void testPurgeAll() throws CachePurgeException, InterruptedException {
+  public void testPurgeAll() throws CachePurgeException, InterruptedException, LoginException {
     assertNull(baseCacheService.getLastPurged());
     assertNull(baseCacheService.getLastPurgedBy());
+    doReturn(resourceResolver).when(baseCacheService).getServiceResourceResolver();
     baseCacheService.purgeAll(resourceResolver);
 
     verify(baseCacheService, times(1)).doPurge(resourceResolver);
@@ -87,9 +89,11 @@ public class BaseCacheServiceTest {
   }
 
   @Test
-  public void testPurgeAllWhenMultipleAttempts() throws CachePurgeException, InterruptedException {
+  public void testPurgeAllWhenMultipleAttempts()
+      throws CachePurgeException, InterruptedException, LoginException {
     assertNull(baseCacheService.getLastPurged());
     assertNull(baseCacheService.getLastPurgedBy());
+    doReturn(resourceResolver).when(baseCacheService).getServiceResourceResolver();
     baseCacheService.purgeAll(resourceResolver);
 
     verify(baseCacheService, times(1)).doPurge(resourceResolver);
@@ -110,9 +114,10 @@ public class BaseCacheServiceTest {
 
   @Test
   public void testPurgeAllWhenMultipleAttemptsAfterExpiration()
-      throws CachePurgeException, InterruptedException {
+      throws CachePurgeException, InterruptedException, LoginException {
     assertNull(baseCacheService.getLastPurged());
     assertNull(baseCacheService.getLastPurgedBy());
+    doReturn(resourceResolver).when(baseCacheService).getServiceResourceResolver();
     baseCacheService.purgeAll(resourceResolver);
 
     verify(baseCacheService, times(1)).doPurge(resourceResolver);
@@ -134,7 +139,7 @@ public class BaseCacheServiceTest {
   }
 
   @Test
-  public void testPurgeAllWhenWhenCachePurgeException() {
+  public void testPurgeAllWhenWhenCachePurgeException() throws LoginException {
     try {
       doThrow(new CachePurgeException("cache purge exception")).when(baseCacheService).doPurge(
           any());
@@ -142,6 +147,7 @@ public class BaseCacheServiceTest {
     }
     assertNull(baseCacheService.getLastPurged());
     assertNull(baseCacheService.getLastPurgedBy());
+    doReturn(resourceResolver).when(baseCacheService).getServiceResourceResolver();
     try {
       baseCacheService.purgeAll(resourceResolver);
     } catch (CachePurgeException e) {
@@ -151,7 +157,8 @@ public class BaseCacheServiceTest {
   }
 
   @Test
-  public void testEnable() throws CachePurgeException {
+  public void testEnable() throws CachePurgeException, LoginException {
+    doReturn(resourceResolver).when(baseCacheService).getServiceResourceResolver();
     baseCacheService.disable(resourceResolver);
     assertNotNull(baseCacheService.getLastPurged());
     assertEquals("test-user", baseCacheService.getLastPurgedBy());
@@ -162,7 +169,8 @@ public class BaseCacheServiceTest {
   }
 
   @Test
-  public void testDisable() throws CachePurgeException {
+  public void testDisable() throws CachePurgeException, LoginException {
+    doReturn(resourceResolver).when(baseCacheService).getServiceResourceResolver();
     baseCacheService.enable(resourceResolver);
     assertNotNull(baseCacheService.getLastPurged());
     assertEquals("test-user", baseCacheService.getLastPurgedBy());

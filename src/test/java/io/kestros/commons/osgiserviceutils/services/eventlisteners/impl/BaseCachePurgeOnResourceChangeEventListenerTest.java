@@ -19,19 +19,6 @@
 
 package io.kestros.commons.osgiserviceutils.services.eventlisteners.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import io.kestros.commons.osgiserviceutils.exceptions.CachePurgeException;
 import io.kestros.commons.osgiserviceutils.services.cache.CacheService;
 import io.kestros.commons.osgiserviceutils.services.cache.impl.SampleJcrCacheService;
@@ -45,6 +32,18 @@ import org.apache.sling.testing.mock.sling.junit.SlingContext;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class BaseCachePurgeOnResourceChangeEventListenerTest {
 
@@ -82,13 +81,13 @@ public class BaseCachePurgeOnResourceChangeEventListenerTest {
     eventListener = spy(new SampleCachePurgeOnResourceChangeEventListener());
     doReturn(resourceResolverFactory).when(eventListener).getResourceResolverFactory();
 
-    assertNull(eventListener.getServiceResourceResolver());
+    assertNotNull(eventListener.getServiceResourceResolver());
 
     eventListener.activate(context.componentContext());
 
     assertNotNull(eventListener.getServiceResourceResolver());
-    verify(resourceResolverFactory, times(1)).getServiceResourceResolver(any());
-    verify(eventListener, times(1)).getServiceUserName();
+    verify(resourceResolverFactory, times(2)).getServiceResourceResolver(any());
+    verify(eventListener, times(2)).getServiceUserName();
   }
 
   @Test
@@ -105,22 +104,21 @@ public class BaseCachePurgeOnResourceChangeEventListenerTest {
 
     assertNotNull(eventListener.getServiceResourceResolver());
 
-    verify(resourceResolverFactory, times(0)).getServiceResourceResolver(any());
-    verify(eventListener, times(1)).getServiceUserName();
+    verify(resourceResolverFactory, times(2)).getServiceResourceResolver(any());
+    verify(eventListener, times(3)).getServiceUserName();
   }
 
-  @Test
+  @Test(expected = LoginException.class)
   public void testActivateWhenLoginException() throws LoginException {
     eventListener = spy(new SampleCachePurgeOnResourceChangeEventListener());
     doReturn(resourceResolverFactory).when(eventListener).getResourceResolverFactory();
     when(resourceResolverFactory.getServiceResourceResolver(any())).thenThrow(LoginException.class);
     eventListener.activate(context.componentContext());
-    assertNull(eventListener.getServiceResourceResolver());
-    verify(eventListener, times(1)).getServiceUserName();
+    eventListener.getServiceResourceResolver();
   }
 
   @Test
-  public void testDeactivate() {
+  public void testDeactivate() throws LoginException {
     eventListener = spy(new SampleCachePurgeOnResourceChangeEventListener());
     doReturn(resourceResolverFactory).when(eventListener).getResourceResolverFactory();
     when(serviceResourceResolver.isLive()).thenReturn(true);
@@ -129,7 +127,7 @@ public class BaseCachePurgeOnResourceChangeEventListenerTest {
     eventListener.deactivate(context.componentContext());
 
     assertNotNull(eventListener.getServiceResourceResolver());
-    verify(serviceResourceResolver, times(1)).close();
+    verify(serviceResourceResolver, times(0)).close();
   }
 
   @Test
@@ -151,7 +149,8 @@ public class BaseCachePurgeOnResourceChangeEventListenerTest {
 
   @Test
   public void testOnChangeWhenCacheServiceIsNull() throws Exception {
-    eventListener = new SampleCachePurgeOnResourceChangeEventListener();
+    eventListener = spy(new SampleCachePurgeOnResourceChangeEventListener());
+    doReturn(resourceResolverFactory).when(eventListener).getResourceResolverFactory();
 
     List<ResourceChange> changeList = new ArrayList<>();
     ResourceChange resourceChange = mock(ResourceChange.class);

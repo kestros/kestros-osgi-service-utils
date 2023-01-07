@@ -26,7 +26,7 @@ import io.kestros.commons.osgiserviceutils.services.eventlisteners.CachePurgeOnR
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.observation.ResourceChange;
 import org.osgi.service.component.ComponentContext;
@@ -59,23 +59,21 @@ public abstract class BaseCachePurgeOnResourceChangeEventListener extends BaseSe
 
   @Override
   public void onChange(@Nonnull final List<ResourceChange> list) {
-    for (final CacheService cacheService : getCacheServices()) {
-      try {
-        if (cacheService != null) {
-          cacheService.purgeAll(getServiceResourceResolver());
-        } else {
-          log.error("Failed to purge cache for{}. No cache service detected.",
-              getClass().getSimpleName());
+    try (ResourceResolver resourceResolver = getServiceResourceResolver()) {
+      for (final CacheService cacheService : getCacheServices()) {
+        try {
+          if (cacheService != null) {
+            cacheService.purgeAll(resourceResolver);
+          } else {
+            log.error("Failed to purge cache for{}. No cache service detected.",
+                getClass().getSimpleName());
+          }
+        } catch (final CachePurgeException exception) {
+          log.error("Failed to create cache purge job. {}", exception.getMessage());
         }
-      } catch (final CachePurgeException exception) {
-        log.error("Failed to create cache purge job. {}", exception.getMessage());
       }
+    } catch (LoginException e) {
+      log.error("Failed to get service resource resolver. {}", e.getMessage());
     }
-  }
-
-  @Nullable
-  @Override
-  protected ResourceResolver getServiceResourceResolver() {
-    return super.getServiceResourceResolver();
   }
 }
