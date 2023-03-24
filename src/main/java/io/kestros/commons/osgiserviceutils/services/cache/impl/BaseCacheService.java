@@ -76,29 +76,31 @@ public abstract class BaseCacheService extends BaseServiceResolverService
 
   @Override
   public void purgeAll(ResourceResolver resourceResolver) throws CachePurgeException {
-    try (ResourceResolver serviceResourceResolver = getServiceResourceResolver()) {
-      if (serviceResourceResolver.isLive()) {
-        if (isCachePurgeTimeoutExpired()) {
+    if (isCachePurgeTimeoutExpired()) {
+      try (ResourceResolver serviceResourceResolver = getServiceResourceResolver()) {
+        if (serviceResourceResolver.isLive()) {
           this.lastPurged = new Date();
           this.lastPurgedBy = resourceResolver.getUserID();
           log.info("{}: Clearing all cached data.", getDisplayName());
           doPurge(serviceResourceResolver);
           this.afterCachePurgeComplete(serviceResourceResolver);
         } else {
-          log.debug("{}: Skipping cache purge, minimum time between purges has not elapsed.",
+          log.error(
+              "{}: Failed to clear cached data. Service ResourceResolver was not live or was null",
               getDisplayName());
+          throw new CachePurgeException(String.format(
+              "Failed to purge cache %s. Resource Resolver was either null, or already closed.",
+              getDisplayName()));
         }
-      } else {
+      } catch (LoginException e) {
         log.error("{}: Failed to clear cached data.", getDisplayName());
         throw new CachePurgeException(String.format(
-            "Failed to purge cache %s. Resource Resolver was either null, or already closed.",
-            getDisplayName()));
+            "Failed to purge cache %s. %s",
+            getDisplayName(), e.getMessage()));
       }
-    } catch (LoginException e) {
-      log.error("{}: Failed to clear cached data.", getDisplayName());
-      throw new CachePurgeException(String.format(
-          "Failed to purge cache %s. %s",
-          getDisplayName(), e.getMessage()));
+    } else {
+      log.debug("{}: Skipping cache purge, minimum time between purges has not elapsed.",
+          getDisplayName());
     }
   }
 
