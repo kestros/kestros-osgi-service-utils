@@ -27,6 +27,8 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.apache.felix.hc.api.FormattingResultLog;
+import org.apache.felix.hc.api.Result;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
@@ -84,5 +86,12 @@ public class BaseServiceResolverServiceTest {
   public void testGetServiceResourceResolver() throws LoginException {
     serviceResolverService.activate(context.componentContext());
     assertEquals(resourceResolver, serviceResolverService.getServiceResourceResolver());
+  }
+
+  @Test
+  public void testRunAdditionalHealthChecks() {
+    FormattingResultLog log = new FormattingResultLog();
+    serviceResolverService.runAdditionalHealthChecks(log);
+    assertEquals(Result.Status.OK, log.getAggregateStatus());
   }
 }

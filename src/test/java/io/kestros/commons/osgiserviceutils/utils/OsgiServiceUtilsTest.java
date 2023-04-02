@@ -21,8 +21,7 @@ package io.kestros.commons.osgiserviceutils.utils;
 
 import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -39,6 +38,12 @@ import org.apache.sling.testing.mock.sling.junit.SlingContext;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
+import org.osgi.service.component.ComponentContext;
+import org.osgi.util.tracker.ServiceTracker;
+
+import java.util.*;
 
 public class OsgiServiceUtilsTest {
 
@@ -134,4 +139,36 @@ public class OsgiServiceUtilsTest {
     verify(resourceResolver, never()).close();
     assertNotNull(resourceResolver);
   }
+
+  @Test
+  public void testGetOsgiServicesOfType() {
+    ComponentContext mockContext = mock(ComponentContext.class);
+    BundleContext bundleContext = mock(BundleContext.class);
+    ServiceTracker mockServiceTracker = mock(ServiceTracker.class);
+    when(mockContext.getBundleContext()).thenReturn(bundleContext);
+    assertNotNull(OsgiServiceUtils.getAllOsgiServicesOfType(context.componentContext(), String.class));
+  }
+
+  @Test
+  public void testGetOsgiServicesOfTypeWhenStringClassName() {
+    ComponentContext mockContext = mock(ComponentContext.class);
+    BundleContext bundleContext = mock(BundleContext.class);
+    ServiceTracker mockServiceTracker = mock(ServiceTracker.class);
+    when(mockContext.getBundleContext()).thenReturn(bundleContext);
+    assertNotNull(OsgiServiceUtils.getAllOsgiServicesOfType(context.componentContext(), "String"));
+  }
+
+  @Test
+  public void testGetOsgiServicesOfTypeWhenServiceTracker() {
+    ServiceTracker mockServiceTracker = mock(ServiceTracker.class);
+    SortedMap sortedMap = mock(SortedMap.class);
+    List<Object> classes = new ArrayList<>();
+    classes.add(String.class);
+    when(sortedMap.values()).thenReturn(classes);
+    when(mockServiceTracker.getTracked()).thenReturn(sortedMap);
+
+    assertEquals(1, OsgiServiceUtils.getAllOsgiServicesOfType("String", mockServiceTracker).size());
+
+  }
+
 }
