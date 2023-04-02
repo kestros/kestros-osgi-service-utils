@@ -21,12 +21,12 @@ package io.kestros.commons.osgiserviceutils.services;
 
 import static io.kestros.commons.structuredslingmodels.utils.SlingModelUtils.getResourceAsBaseResource;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.kestros.commons.structuredslingmodels.BaseResource;
 import io.kestros.commons.structuredslingmodels.exceptions.ResourceNotFoundException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nonnull;
 import org.apache.felix.hc.api.FormattingResultLog;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -86,6 +86,7 @@ public abstract class BaseServiceResolverService implements ManagedService {
   }
 
 
+  @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
   @Override
   public void runAdditionalHealthChecks(FormattingResultLog log) {
     try (ResourceResolver resourceResolver = getServiceResourceResolver()) {

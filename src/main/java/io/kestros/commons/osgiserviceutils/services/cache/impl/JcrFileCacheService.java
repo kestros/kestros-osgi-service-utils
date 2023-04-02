@@ -26,6 +26,7 @@ import static io.kestros.commons.structuredslingmodels.utils.SlingModelUtils.get
 import static io.kestros.commons.structuredslingmodels.utils.SlingModelUtils.getResourceAsBaseResource;
 import static org.apache.jackrabbit.JcrConstants.JCR_PRIMARYTYPE;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.kestros.commons.osgiserviceutils.exceptions.CacheBuilderException;
 import io.kestros.commons.osgiserviceutils.exceptions.CachePurgeException;
 import io.kestros.commons.structuredslingmodels.BaseResource;
@@ -66,10 +67,8 @@ public abstract class JcrFileCacheService extends BaseCacheService {
    */
   public abstract String getServiceCacheRootPath();
 
-  @Deprecated
   protected abstract String getServiceUserName();
 
-  @Deprecated
   protected abstract ResourceResolverFactory getResourceResolverFactory();
 
   protected abstract List<String> getRequiredResourcePaths();
@@ -89,6 +88,7 @@ public abstract class JcrFileCacheService extends BaseCacheService {
    *
    * @param componentContext ComponentContext.
    */
+  @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
   @Deactivate
   public void deactivate(ComponentContext componentContext) {
     log.info("Deactivating {}.", getDisplayName());
@@ -102,6 +102,7 @@ public abstract class JcrFileCacheService extends BaseCacheService {
   }
 
 
+  @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
   @Override
   public void runAdditionalHealthChecks(FormattingResultLog log) {
     try (ResourceResolver serviceResourceResolver = getServiceResourceResolver()) {

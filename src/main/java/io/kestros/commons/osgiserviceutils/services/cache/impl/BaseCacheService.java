@@ -19,6 +19,7 @@
 
 package io.kestros.commons.osgiserviceutils.services.cache.impl;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.kestros.commons.osgiserviceutils.exceptions.CachePurgeException;
 import io.kestros.commons.osgiserviceutils.services.BaseServiceResolverService;
 import io.kestros.commons.osgiserviceutils.services.cache.CacheService;
@@ -74,6 +75,7 @@ public abstract class BaseCacheService extends BaseServiceResolverService
 
   protected abstract JobManager getJobManager();
 
+  @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
   @Override
   public void purgeAll(ResourceResolver resourceResolver) throws CachePurgeException {
     if (isCachePurgeTimeoutExpired()) {

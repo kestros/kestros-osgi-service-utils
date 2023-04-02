@@ -19,6 +19,7 @@
 
 package io.kestros.commons.osgiserviceutils.services.eventlisteners.impl;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.kestros.commons.osgiserviceutils.exceptions.CachePurgeException;
 import io.kestros.commons.osgiserviceutils.services.BaseServiceResolverService;
 import io.kestros.commons.osgiserviceutils.services.cache.CacheService;
@@ -57,6 +58,7 @@ public abstract class BaseCachePurgeOnResourceChangeEventListener extends BaseSe
     }
   }
 
+  @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
   @Override
   public void onChange(@Nonnull final List<ResourceChange> list) {
     try (ResourceResolver resourceResolver = getServiceResourceResolver()) {

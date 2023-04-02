@@ -66,11 +66,6 @@ public class SampleJcrCacheService extends JcrFileCacheService {
   }
 
   @Override
-  public void runAdditionalHealthChecks(FormattingResultLog log) {
-
-  }
-
-  @Override
   protected Logger getLogger() {
     return null;
   }
