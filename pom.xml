@@ -49,7 +49,7 @@
     <dependency>
       <groupId>io.kestros.commons</groupId>
       <artifactId>kestros-structured-sling-models</artifactId>
-      <version>0.2.3</version>
+      <version>0.2.4-SNAPSHOT</version>
     </dependency>
   </dependencies>
 
