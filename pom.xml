@@ -25,13 +25,13 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>io.kestros.commons</groupId>
-    <artifactId>kestros-parent-strict</artifactId>
-    <version>0.2.3</version>
+    <artifactId>kestros-parent</artifactId>
+    <version>0.3.0</version>
     <relativePath/>
   </parent>
 
   <artifactId>kestros-osgi-service-utils</artifactId>
-  <version>0.1.7</version>
+  <version>0.1.8</version>
 
   <packaging>bundle</packaging>
 
@@ -49,6 +49,7 @@
     <dependency>
       <groupId>io.kestros.commons</groupId>
       <artifactId>kestros-structured-sling-models</artifactId>
+      <version>0.2.4</version>
     </dependency>
   </dependencies>
 

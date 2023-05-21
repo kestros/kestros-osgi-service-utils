@@ -24,6 +24,7 @@ import io.kestros.commons.osgiserviceutils.services.cache.impl.SampleCacheServic
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.Nonnull;
 import org.apache.felix.hc.api.FormattingResultLog;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.api.resource.observation.ResourceChangeListener;
@@ -31,6 +32,7 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicyOption;
+import org.slf4j.Logger;
 
 @Component(service = ResourceChangeListener.class,
            property = {ResourceChangeListener.CHANGES + "=ADDED",
@@ -78,6 +80,12 @@ public class SampleCachePurgeOnResourceChangeEventListener
   @Override
   public void runAdditionalHealthChecks(FormattingResultLog log) {
 
+  }
+
+  @Nonnull
+  @Override
+  protected Logger getLogger() {
+    return null;
   }
 
   @Override

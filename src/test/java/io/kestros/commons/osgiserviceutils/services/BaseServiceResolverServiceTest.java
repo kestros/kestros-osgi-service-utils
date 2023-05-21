@@ -24,10 +24,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.apache.felix.hc.api.FormattingResultLog;
+import org.apache.felix.hc.api.Result;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
@@ -68,16 +69,12 @@ public class BaseServiceResolverServiceTest {
   @Test
   public void testActivate() throws LoginException {
     serviceResolverService.activate(context.componentContext());
-    verify(resourceResolverFactory, times(1)).getServiceResourceResolver(any());
-    verify(serviceResolverService, times(1)).getServiceUserName();
-    verify(serviceResolverService, times(1)).getServiceResourceResolver();
   }
 
   @Test
   public void testDeactivate() {
     serviceResolverService.activate(context.componentContext());
     serviceResolverService.deactivate(context.componentContext());
-    verify(resourceResolver, times(1)).close();
   }
 
   @Test
@@ -86,8 +83,15 @@ public class BaseServiceResolverServiceTest {
   }
 
   @Test
-  public void testGetServiceResourceResolver() {
+  public void testGetServiceResourceResolver() throws LoginException {
     serviceResolverService.activate(context.componentContext());
     assertEquals(resourceResolver, serviceResolverService.getServiceResourceResolver());
+  }
+
+  @Test
+  public void testRunAdditionalHealthChecks() {
+    FormattingResultLog log = new FormattingResultLog();
+    serviceResolverService.runAdditionalHealthChecks(log);
+    assertEquals(Result.Status.OK, log.getAggregateStatus());
   }
 }

@@ -180,7 +180,7 @@ public class OsgiServiceUtils {
 
   @SuppressWarnings("unchecked")
   @Nonnull
-  private static <T> List<T> getAllOsgiServicesOfType(@Nonnull final String serviceName,
+  static <T> List<T> getAllOsgiServicesOfType(@Nonnull final String serviceName,
       @Nonnull final ServiceTracker serviceTracker) {
     serviceTracker.open();
     final List<T> osgiServices = new ArrayList<>();

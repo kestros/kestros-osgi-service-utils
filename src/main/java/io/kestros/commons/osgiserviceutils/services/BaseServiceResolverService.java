@@ -19,28 +19,28 @@
 
 package io.kestros.commons.osgiserviceutils.services;
 
-import static io.kestros.commons.osgiserviceutils.utils.OsgiServiceUtils.closeServiceResourceResolver;
-import static io.kestros.commons.osgiserviceutils.utils.OsgiServiceUtils.getOpenServiceResourceResolverOrNullAndLogExceptions;
 import static io.kestros.commons.structuredslingmodels.utils.SlingModelUtils.getResourceAsBaseResource;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.kestros.commons.structuredslingmodels.BaseResource;
 import io.kestros.commons.structuredslingmodels.exceptions.ResourceNotFoundException;
+import java.util.Collections;
 import java.util.List;
-import javax.annotation.Nullable;
+import java.util.Map;
 import org.apache.felix.hc.api.FormattingResultLog;
+import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Deactivate;
+import org.slf4j.Logger;
 
 /**
  * Baseline OSGI Service which when activated, creates a ResourceResolver for a service User.  When
  * deactivated the ResourceResolver is closed.
  */
 public abstract class BaseServiceResolverService implements ManagedService {
-
-  private ResourceResolver serviceResourceResolver;
 
   private ComponentContext componentContext;
 
@@ -53,8 +53,6 @@ public abstract class BaseServiceResolverService implements ManagedService {
    */
   @Activate
   public void activate(final ComponentContext ctx) {
-    serviceResourceResolver = getOpenServiceResourceResolverOrNullAndLogExceptions(
-        getServiceUserName(), getServiceResourceResolver(), getResourceResolverFactory(), this);
     componentContext = ctx;
   }
 
@@ -65,39 +63,55 @@ public abstract class BaseServiceResolverService implements ManagedService {
    */
   @Deactivate
   public void deactivate(ComponentContext componentContext) {
-    closeServiceResourceResolver(getServiceResourceResolver(), this);
   }
 
-  protected ResourceResolver getNewServiceResourceResolver() {
-    return getOpenServiceResourceResolverOrNullAndLogExceptions(getServiceUserName(),
-        getServiceResourceResolver(), getResourceResolverFactory(), this);
+  /**
+   * Retrieves a resource resolver as the service user.
+   *
+   * @return ResourceResolver.
+   *
+   * @throws LoginException If unable to login as service user.
+   */
+  public ResourceResolver getServiceResourceResolver() throws LoginException {
+    final Map<String, Object> params = Collections.singletonMap(
+        ResourceResolverFactory.SUBSERVICE, getServiceUserName());
+    if (getResourceResolverFactory() != null) {
+      if (getLogger() != null) {
+        getLogger().info("Getting service resource resolver for {}.", getServiceUserName());
+      }
+      return getResourceResolverFactory().getServiceResourceResolver(params);
+    } else {
+      throw new LoginException("Resource resolver factory was null");
+    }
   }
 
+
+  @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
   @Override
   public void runAdditionalHealthChecks(FormattingResultLog log) {
-    if (getServiceResourceResolver() == null) {
-      log.critical("Service ResourceResolver is null.");
-    } else if (!getServiceResourceResolver().isLive()) {
-      log.critical("Service ResourceResolver has closed.");
-    } else {
-      getServiceResourceResolver().refresh();
+    try (ResourceResolver resourceResolver = getServiceResourceResolver()) {
+      if (resourceResolver.isLive()) {
+        log.debug("Service ResourceResolver is live.");
+      } else {
+        log.critical("Service ResourceResolver is not live.");
+      }
       if (getRequiredResourcePaths() != null) {
         for (String path : getRequiredResourcePaths()) {
           try {
-            BaseResource requiredResource = getResourceAsBaseResource(path,
-                getServiceResourceResolver());
+            BaseResource requiredResource = getResourceAsBaseResource(path, resourceResolver);
             log.debug(String.format("Found resource at path %s", requiredResource.getPath()));
           } catch (ResourceNotFoundException e) {
             log.critical(String.format("Failed to find resource at path %s", path));
           }
         }
-      } else {
-        log.warn(
-            "Required resources paths was null. Return Collections.emptyList() if no resource paths"
-            + " are required.");
       }
+    } catch (LoginException e) {
+      log.critical("Unable to get Service ResourceResolver: {}", e.getMessage());
     }
+
   }
+
+  protected abstract Logger getLogger();
 
   protected abstract List<String> getRequiredResourcePaths();
 
@@ -105,11 +119,6 @@ public abstract class BaseServiceResolverService implements ManagedService {
 
   protected ComponentContext getComponentContext() {
     return this.componentContext;
-  }
-
-  @Nullable
-  protected ResourceResolver getServiceResourceResolver() {
-    return this.serviceResourceResolver;
   }
 
 }

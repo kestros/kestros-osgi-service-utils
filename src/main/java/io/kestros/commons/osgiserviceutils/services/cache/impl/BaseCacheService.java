@@ -19,12 +19,15 @@
 
 package io.kestros.commons.osgiserviceutils.services.cache.impl;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.kestros.commons.osgiserviceutils.exceptions.CachePurgeException;
+import io.kestros.commons.osgiserviceutils.services.BaseServiceResolverService;
 import io.kestros.commons.osgiserviceutils.services.cache.CacheService;
 import io.kestros.commons.osgiserviceutils.services.cache.ManagedCacheService;
 import java.util.Date;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.event.jobs.JobManager;
 import org.slf4j.Logger;
@@ -34,15 +37,14 @@ import org.slf4j.LoggerFactory;
  * Baseline logic for managing CacheServices. Allows purging, enabling, disabling and tracking cache
  * purge actions.
  */
-public abstract class BaseCacheService implements CacheService, ManagedCacheService {
+public abstract class BaseCacheService extends BaseServiceResolverService
+    implements CacheService, ManagedCacheService {
 
   private static final long serialVersionUID = -4534057590200718400L;
-
+  protected final Logger log = LoggerFactory.getLogger(getClass());
   private boolean isLive = true;
   private Date lastPurged;
   private String lastPurgedBy;
-
-  protected final Logger log = LoggerFactory.getLogger(getClass());
 
   protected abstract void doPurge(ResourceResolver resourceResolver) throws CachePurgeException;
 
@@ -73,24 +75,34 @@ public abstract class BaseCacheService implements CacheService, ManagedCacheServ
 
   protected abstract JobManager getJobManager();
 
+  @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
   @Override
-  public void purgeAll(final ResourceResolver resourceResolver) throws CachePurgeException {
-    if (resourceResolver != null && resourceResolver.isLive()) {
-      if (isCachePurgeTimeoutExpired()) {
-        this.lastPurged = new Date();
-        this.lastPurgedBy = resourceResolver.getUserID();
-        log.info("{}: Clearing all cached data.", getDisplayName());
-        doPurge(resourceResolver);
-        this.afterCachePurgeComplete(resourceResolver);
-      } else {
-        log.debug("{}: Skipping cache purge, minimum time between purges has not elapsed.",
-            getDisplayName());
+  public void purgeAll(ResourceResolver resourceResolver) throws CachePurgeException {
+    if (isCachePurgeTimeoutExpired()) {
+      try (ResourceResolver serviceResourceResolver = getServiceResourceResolver()) {
+        if (serviceResourceResolver.isLive()) {
+          this.lastPurged = new Date();
+          this.lastPurgedBy = resourceResolver.getUserID();
+          log.info("{}: Clearing all cached data.", getDisplayName());
+          doPurge(serviceResourceResolver);
+          this.afterCachePurgeComplete(serviceResourceResolver);
+        } else {
+          log.error(
+              "{}: Failed to clear cached data. Service ResourceResolver was not live or was null",
+              getDisplayName());
+          throw new CachePurgeException(String.format(
+              "Failed to purge cache %s. Resource Resolver was either null, or already closed.",
+              getDisplayName()));
+        }
+      } catch (LoginException e) {
+        log.error("{}: Failed to clear cached data.", getDisplayName());
+        throw new CachePurgeException(String.format(
+            "Failed to purge cache %s. %s",
+            getDisplayName(), e.getMessage()));
       }
     } else {
-      log.error("{}: Failed to clear cached data.", getDisplayName());
-      throw new CachePurgeException(String.format(
-          "Failed to purge cache %s. Resource Resolver was either null, or already closed.",
-          getDisplayName()));
+      log.debug("{}: Skipping cache purge, minimum time between purges has not elapsed.",
+          getDisplayName());
     }
   }
 
