@@ -19,17 +19,6 @@
 
 package io.kestros.commons.osgiserviceutils.services.cache.impl;
 
-import io.kestros.commons.osgiserviceutils.exceptions.CachePurgeException;
-import java.util.Date;
-import java.util.HashMap;
-import org.apache.sling.api.resource.LoginException;
-import org.apache.sling.api.resource.ResourceResolver;
-import org.apache.sling.event.jobs.JobManager;
-import org.apache.sling.testing.mock.sling.junit.SlingContext;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -43,6 +32,17 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import io.kestros.commons.osgiserviceutils.exceptions.CachePurgeException;
+import java.util.Date;
+import java.util.HashMap;
+import org.apache.sling.api.resource.LoginException;
+import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.event.jobs.JobManager;
+import org.apache.sling.testing.mock.sling.junit.SlingContext;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 
 public class BaseCacheServiceTest {
 
@@ -89,8 +89,34 @@ public class BaseCacheServiceTest {
   }
 
   @Test
+  public void testPurgeAllWhenResourceResolverIsNotLive() throws CachePurgeException,
+          InterruptedException, LoginException {
+    resourceResolver = mock(ResourceResolver.class);
+    when(resourceResolver.isLive()).thenReturn(false);
+    assertNull(baseCacheService.getLastPurged());
+    assertNull(baseCacheService.getLastPurgedBy());
+    doReturn(resourceResolver).when(baseCacheService).getServiceResourceResolver();
+    exception = null;
+    try {
+      baseCacheService.purgeAll(resourceResolver);
+    } catch (CachePurgeException e) {
+      exception = e;
+    }
+    assertNotNull(exception);
+    assertEquals(
+            "Failed to purge cache sample cache service. Resource Resolver was either null, or "
+                    + "already closed.",
+            exception.getMessage());
+
+    verify(baseCacheService, times(0)).doPurge(resourceResolver);
+    Date firstPurgeDate = baseCacheService.getLastPurged();
+    assertNull(baseCacheService.getLastPurged());
+    assertNull(baseCacheService.getLastPurgedBy());
+  }
+
+  @Test
   public void testPurgeAllWhenMultipleAttempts()
-      throws CachePurgeException, InterruptedException, LoginException {
+          throws CachePurgeException, InterruptedException, LoginException {
     assertNull(baseCacheService.getLastPurged());
     assertNull(baseCacheService.getLastPurgedBy());
     doReturn(resourceResolver).when(baseCacheService).getServiceResourceResolver();
@@ -114,7 +140,7 @@ public class BaseCacheServiceTest {
 
   @Test
   public void testPurgeAllWhenMultipleAttemptsAfterExpiration()
-      throws CachePurgeException, InterruptedException, LoginException {
+          throws CachePurgeException, InterruptedException, LoginException {
     assertNull(baseCacheService.getLastPurged());
     assertNull(baseCacheService.getLastPurgedBy());
     doReturn(resourceResolver).when(baseCacheService).getServiceResourceResolver();
@@ -142,7 +168,7 @@ public class BaseCacheServiceTest {
   public void testPurgeAllWhenWhenCachePurgeException() throws LoginException {
     try {
       doThrow(new CachePurgeException("cache purge exception")).when(baseCacheService).doPurge(
-          any());
+              any());
     } catch (CachePurgeException e) {
     }
     assertNull(baseCacheService.getLastPurged());
@@ -188,7 +214,7 @@ public class BaseCacheServiceTest {
   @Test
   public void testGetServiceClassName() {
     assertEquals("org.mockito.internal.creation.bytebuddy.MockAccess",
-        baseCacheService.getServiceClassName());
+            baseCacheService.getServiceClassName());
   }
 
   @Test

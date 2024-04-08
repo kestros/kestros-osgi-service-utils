@@ -64,7 +64,7 @@ public abstract class BaseCacheService extends BaseServiceResolverService
    */
   public void addCacheCreationJob(final Map<String, Object> jobProperties) {
     if (getJobManager() != null && StringUtils.isNotEmpty(getCacheCreationJobName())) {
-      log.info("Starting cache job {}. {}", getCacheCreationJobName(), jobProperties);
+      log.info("Starting cache job {}", getCacheCreationJobName().replaceAll("[\r\n]", ""));
       getJobManager().addJob(getCacheCreationJobName(), jobProperties);
     }
   }
@@ -83,26 +83,26 @@ public abstract class BaseCacheService extends BaseServiceResolverService
         if (serviceResourceResolver.isLive()) {
           this.lastPurged = new Date();
           this.lastPurgedBy = resourceResolver.getUserID();
-          log.info("{}: Clearing all cached data.", getDisplayName());
+          log.info("{}: Clearing all cached data.", getDisplayName().replaceAll("[\r\n]", ""));
           doPurge(serviceResourceResolver);
           this.afterCachePurgeComplete(serviceResourceResolver);
         } else {
           log.error(
               "{}: Failed to clear cached data. Service ResourceResolver was not live or was null",
-              getDisplayName());
+              getDisplayName().replaceAll("[\r\n]", ""));
           throw new CachePurgeException(String.format(
               "Failed to purge cache %s. Resource Resolver was either null, or already closed.",
               getDisplayName()));
         }
       } catch (LoginException e) {
-        log.error("{}: Failed to clear cached data.", getDisplayName());
+        log.error("{}: Failed to clear cached data.", getDisplayName().replaceAll("[\r\n]", ""));
         throw new CachePurgeException(String.format(
             "Failed to purge cache %s. %s",
             getDisplayName(), e.getMessage()));
       }
     } else {
       log.debug("{}: Skipping cache purge, minimum time between purges has not elapsed.",
-          getDisplayName());
+          getDisplayName().replaceAll("[\r\n]", ""));
     }
   }
 
