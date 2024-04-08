@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory;
  * Baseline logic for clearing cache based on a ResourceChange Event.
  */
 public abstract class BaseCachePurgeOnResourceChangeEventListener extends BaseServiceResolverService
-    implements CachePurgeOnResourceChangeEventListener {
+        implements CachePurgeOnResourceChangeEventListener {
 
   protected final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -68,14 +68,20 @@ public abstract class BaseCachePurgeOnResourceChangeEventListener extends BaseSe
             cacheService.purgeAll(resourceResolver);
           } else {
             log.error("Failed to purge cache for{}. No cache service detected.",
-                getClass().getSimpleName());
+                    getClass().getSimpleName().replaceAll("[\r\n]", ""));
           }
         } catch (final CachePurgeException exception) {
-          log.error("Failed to create cache purge job. {}", exception.getMessage());
+          if (exception.getMessage() != null) {
+            log.error("Failed to create cache purge job. {}",
+                    exception.getMessage().replaceAll("[\r\n]", ""));
+          } else {
+            log.error("Failed to create cache purge job and exception message was null.");
+          }
         }
       }
     } catch (LoginException e) {
-      log.error("Failed to get service resource resolver. {}", e.getMessage());
+      log.error("Failed to get service resource resolver. {}",
+              e.getMessage().replaceAll("[\r\n]", ""));
     }
   }
 }

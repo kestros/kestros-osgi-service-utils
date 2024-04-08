@@ -77,7 +77,8 @@ public abstract class BaseServiceResolverService implements ManagedService {
         ResourceResolverFactory.SUBSERVICE, getServiceUserName());
     if (getResourceResolverFactory() != null) {
       if (getLogger() != null) {
-        getLogger().debug("Getting service resource resolver for {}.", getServiceUserName());
+        getLogger().debug("Getting service resource resolver for {}.",
+                getServiceUserName().replaceAll("[\r\n]", ""));
       }
       return getResourceResolverFactory().getServiceResourceResolver(params);
     } else {
