@@ -20,6 +20,8 @@
 package io.kestros.commons.osgiserviceutils.services;
 
 import java.util.Date;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Interface for services which will make connections to external services.
@@ -36,13 +38,14 @@ public interface ExternalConnectionService extends ManagedService {
    *
    * @param reason Reason the connection failed.
    */
-  void connectionFailed(String reason);
+  void connectionFailed(@Nonnull String reason);
 
   /**
    * Date of the last success connection to the endpoint.
    *
    * @return Date of the last success connection to the endpoint.
    */
+  @Nullable
   Date getLastSuccessfulConnection();
 
   /**
@@ -50,6 +53,7 @@ public interface ExternalConnectionService extends ManagedService {
    *
    * @return Date of the last failed connection to the endpoint.
    */
+  @Nullable
   Date getLastFailedConnection();
 
   /**
@@ -57,6 +61,7 @@ public interface ExternalConnectionService extends ManagedService {
    *
    * @return Reason for the last failed connection.
    */
+  @Nullable
   String getLastFailedConnectionReason();
 
 }

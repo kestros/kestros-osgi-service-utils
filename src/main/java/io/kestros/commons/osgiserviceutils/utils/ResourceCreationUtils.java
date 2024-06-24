@@ -25,11 +25,13 @@ import static org.apache.jackrabbit.JcrConstants.JCR_DATA;
 import static org.apache.jackrabbit.JcrConstants.JCR_MIMETYPE;
 import static org.apache.jackrabbit.JcrConstants.JCR_PRIMARYTYPE;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.Nonnull;
 import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
@@ -48,20 +50,24 @@ public class ResourceCreationUtils {
    * Creates text nt:file resource with specified mimeType. New file is NOT committed during this
    * method.
    *
-   * @param content          Content of text file.
-   * @param mimeType         File mimeType.
-   * @param parentResource   Resource to create new file as a child of.
-   * @param name             Name of new resource.
+   * @param content Content of text file.
+   * @param mimeType File mimeType.
+   * @param parentResource Resource to create new file as a child of.
+   * @param name Name of new resource.
    * @param resourceResolver ResourceResolver used to create new file.
-   * @throws PersistenceException New file could not be created/persisted by resourceResolver.
+   *
+   * @throws PersistenceException New file could not be created/persisted by
+   *         resourceResolver.
    */
-  public static void createTextFileResource(final String content, final String mimeType,
-      final Resource parentResource, final String name, final ResourceResolver resourceResolver)
-      throws PersistenceException {
+  @SuppressFBWarnings("OPM_OVERLY_PERMISSIVE_METHOD")
+  public static void createTextFileResource(@Nonnull final String content,
+          @Nonnull final String mimeType,
+          @Nonnull final Resource parentResource, @Nonnull final String name,
+          @Nonnull final ResourceResolver resourceResolver)
+          throws PersistenceException {
     final Map<String, Object> properties = new HashMap<>();
-    InputStream inputStream = null;
-    try {
-      inputStream = new ByteArrayInputStream(content.getBytes(UTF_8));
+    try (InputStream inputStream = new ByteArrayInputStream(content.getBytes(UTF_8))) {
+
       properties.put(JCR_PRIMARYTYPE, "nt:file");
 
       final Map<String, Object> jcrContentProperties = new HashMap<>();
@@ -71,14 +77,10 @@ public class ResourceCreationUtils {
 
       final Resource fileResource = resourceResolver.create(parentResource, name, properties);
       resourceResolver.create(fileResource, JCR_CONTENT, jcrContentProperties);
-    } finally {
-      if (inputStream != null) {
-        try {
-          inputStream.close();
-        } catch (IOException e) {
-          // D nothing
-        }
-      }
+    } catch (IOException e) {
+      throw new PersistenceException(
+              String.format("Failed to create text file %s as a child of %s", name,
+                            parentResource.getPath()), e);
     }
   }
 
@@ -86,16 +88,20 @@ public class ResourceCreationUtils {
    * Creates text nt:file resource with specified mimeType. New file is committed during this
    * method.
    *
-   * @param content          Content of text file.
-   * @param mimeType         File mimeType.
-   * @param parentResource   Resource to create new file as a child of.
-   * @param name             Name of new resource.
+   * @param content Content of text file.
+   * @param mimeType File mimeType.
+   * @param parentResource Resource to create new file as a child of.
+   * @param name Name of new resource.
    * @param resourceResolver ResourceResolver used to create new file.
-   * @throws PersistenceException New file could not be created/persisted by resourceResolver.
+   *
+   * @throws PersistenceException New file could not be created/persisted by
+   *         resourceResolver.
    */
-  public static void createTextFileResourceAndCommit(final String content, final String mimeType,
-      final Resource parentResource, final String name, final ResourceResolver resourceResolver)
-      throws PersistenceException {
+  public static void createTextFileResourceAndCommit(@Nonnull final String content,
+          @Nonnull final String mimeType,
+          @Nonnull final Resource parentResource, @Nonnull final String name,
+          @Nonnull final ResourceResolver resourceResolver)
+          throws PersistenceException {
     createTextFileResource(content, mimeType, parentResource, name, resourceResolver);
     resourceResolver.commit();
   }

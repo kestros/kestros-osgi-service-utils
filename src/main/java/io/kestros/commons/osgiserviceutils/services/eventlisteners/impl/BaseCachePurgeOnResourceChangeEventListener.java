@@ -51,7 +51,7 @@ public abstract class BaseCachePurgeOnResourceChangeEventListener extends BaseSe
    * @param ctx ComponentContext.
    */
   @Activate
-  public void activate(final ComponentContext ctx) {
+  public void activate(@Nonnull final ComponentContext ctx) {
     super.activate(ctx);
     if (this.purgeOnActivation()) {
       this.onChange(Collections.EMPTY_LIST);

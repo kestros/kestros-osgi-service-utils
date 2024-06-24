@@ -53,7 +53,9 @@ public class OsgiServiceUtils {
    *         needed.
    * @param service Service the ResourceResolver will be used for.
    *
-   * @return Newly opened service ResourceResolver or existing resourceResolver if it is still live.
+   * @return Newly opened service ResourceResolver or existing resourceResolver if it is still
+   *         live.
+   *
    * @throws LoginException ResourceResolver factory failed to login for the given service
    *         UserID.
    */
@@ -66,8 +68,8 @@ public class OsgiServiceUtils {
     ResourceResolver resourceResolver = existingResourceResolver;
     if (resourceResolver != null && resourceResolver.isLive()) {
       LOG.info("Attempted to open ResourceResolver for service user {}, for service {}, but a live "
-                      + "ResourceResolver already exists.", serviceName.replaceAll("[\r\n]", ""),
-              service.getClass().getSimpleName().replaceAll("[\r\n]", ""));
+                       + "ResourceResolver already exists.", serviceName.replaceAll("[\r\n]", ""),
+               service.getClass().getSimpleName().replaceAll("[\r\n]", ""));
     } else {
 
       final Map<String, Object> params = Collections.singletonMap(
@@ -76,12 +78,13 @@ public class OsgiServiceUtils {
       if (resourceResolverFactory != null) {
         resourceResolver = resourceResolverFactory.getServiceResourceResolver(params);
         LOG.info("Opened service user {} resourceResolver for service {}.",
-                serviceName.replaceAll("[\r\n]", ""),
-                service.getClass().getSimpleName().replaceAll("[\r\n]", ""));
+                 serviceName.replaceAll("[\r\n]", ""),
+                 service.getClass().getSimpleName().replaceAll("[\r\n]", ""));
       } else {
         LOG.warn("Failed to open service user {} resourceResolver for service {}. "
-                        + "ResourceResolverFactory was null.", serviceName.replaceAll("[\r\n]", ""),
-                service.getClass().getSimpleName().replaceAll("[\r\n]", ""));
+                         + "ResourceResolverFactory was null.",
+                 serviceName.replaceAll("[\r\n]", ""),
+                 service.getClass().getSimpleName().replaceAll("[\r\n]", ""));
         throw new LoginException();
       }
     }
@@ -98,21 +101,23 @@ public class OsgiServiceUtils {
    *         needed.
    * @param service Service the ResourceResolver will be used for.
    *
-   * @return Newly opened service ResourceResolver or existing resourceResolver if it is still live.
+   * @return Newly opened service ResourceResolver or existing resourceResolver if it is still
+   *         live.
    */
   @Nullable
   public static ResourceResolver getOpenServiceResourceResolverOrNullAndLogExceptions(
-          @Nonnull final String serviceName, final ResourceResolver existingResourceResolver,
+          @Nonnull final String serviceName,
+          @Nonnull final ResourceResolver existingResourceResolver,
           @Nonnull final ResourceResolverFactory resourceResolverFactory,
           @Nonnull final Object service) {
     try {
       return getOpenServiceResourceResolver(serviceName, existingResourceResolver,
-              resourceResolverFactory, service);
+                                            resourceResolverFactory, service);
     } catch (final LoginException exception) {
       LOG.error("Failed to log into service user {} resourceResolver for {}. {}",
-              serviceName.replaceAll("[\r\n]", ""),
-              service.getClass().getSimpleName().replaceAll("[\r\n]", ""),
-              exception.getMessage().replaceAll("[\r\n]", ""));
+                serviceName.replaceAll("[\r\n]", ""),
+                service.getClass().getSimpleName().replaceAll("[\r\n]", ""),
+                exception.getMessage().replaceAll("[\r\n]", ""));
     }
     return null;
   }
@@ -123,10 +128,10 @@ public class OsgiServiceUtils {
    * @param resourceResolver ResourceResolver to close.
    * @param service Service the ResourceResolver is used for.
    */
-  public static void closeServiceResourceResolver(final ResourceResolver resourceResolver,
+  public static void closeServiceResourceResolver(@Nonnull final ResourceResolver resourceResolver,
           @Nonnull final Object service) {
     LOG.trace("Checking if resourceResolver needs to be closed for {}",
-            service.getClass().getSimpleName().replaceAll("[\r\n]", ""));
+              service.getClass().getSimpleName().replaceAll("[\r\n]", ""));
     if (resourceResolver != null && resourceResolver.isLive()) {
       LOG.info("Closing resourceResolver for {}", service.getClass().getSimpleName().replaceAll(
               "[\r\n]", ""));
@@ -143,13 +148,18 @@ public class OsgiServiceUtils {
    *
    * @return The top ranked service registered to a specified class.
    */
-  public static <T> T getOsgiServiceOfType(ComponentContext componentContext, Class<T> type) {
+  @Nullable
+  public static <T> T getOsgiServiceOfType(@Nonnull ComponentContext componentContext,
+          @Nonnull Class<T> type) {
     final ServiceTracker serviceTracker = new ServiceTracker(componentContext.getBundleContext(),
-            type.getName(), null);
+                                                             type.getName(), null);
     serviceTracker.open();
-    T service = (T) serviceTracker.getService();
-    serviceTracker.close();
-    return service;
+    try {
+      T service = (T) serviceTracker.getService();
+      return service;
+    } finally {
+      serviceTracker.close();
+    }
   }
 
   /**
@@ -163,10 +173,11 @@ public class OsgiServiceUtils {
    */
   @SuppressWarnings("unchecked")
   @Nonnull
-  public static <T> List<T> getAllOsgiServicesOfType(final ComponentContext componentContext,
-          final Class<T> type) {
+  public static <T> List<T> getAllOsgiServicesOfType(
+          @Nonnull final ComponentContext componentContext,
+          @Nonnull final Class<T> type) {
     final ServiceTracker serviceTracker = new ServiceTracker(componentContext.getBundleContext(),
-            type, null);
+                                                             type, null);
     return getAllOsgiServicesOfType(type.getName(), serviceTracker);
   }
 
@@ -181,10 +192,11 @@ public class OsgiServiceUtils {
    */
   @SuppressWarnings("unchecked")
   @Nonnull
-  public static <T> List<T> getAllOsgiServicesOfType(final ComponentContext componentContext,
-          final String serviceClassName) {
+  public static <T> List<T> getAllOsgiServicesOfType(
+          @Nonnull final ComponentContext componentContext,
+          @Nonnull final String serviceClassName) {
     final ServiceTracker serviceTracker = new ServiceTracker(componentContext.getBundleContext(),
-            serviceClassName, null);
+                                                             serviceClassName, null);
 
     return getAllOsgiServicesOfType(serviceClassName, serviceTracker);
   }

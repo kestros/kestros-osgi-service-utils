@@ -26,6 +26,8 @@ import io.kestros.commons.osgiserviceutils.services.cache.CacheService;
 import io.kestros.commons.osgiserviceutils.services.cache.ManagedCacheService;
 import java.util.Date;
 import java.util.Map;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -38,31 +40,33 @@ import org.slf4j.LoggerFactory;
  * purge actions.
  */
 public abstract class BaseCacheService extends BaseServiceResolverService
-    implements CacheService, ManagedCacheService {
+        implements CacheService, ManagedCacheService {
 
-  private static final long serialVersionUID = -4534057590200718400L;
+  private static final long serialVersionUID = 1L;
+
   protected final Logger log = LoggerFactory.getLogger(getClass());
   private boolean isLive = true;
   private Date lastPurged;
   private String lastPurgedBy;
 
-  protected abstract void doPurge(ResourceResolver resourceResolver) throws CachePurgeException;
+  protected abstract void doPurge(@Nonnull ResourceResolver resourceResolver) throws
+          CachePurgeException;
 
   /**
    * Logic run after cache purge is completed.
    *
    * @param resourceResolver ResourceResolver.
    */
-  protected abstract void afterCachePurgeComplete(ResourceResolver resourceResolver);
+  protected abstract void afterCachePurgeComplete(@Nonnull ResourceResolver resourceResolver);
 
   /**
    * Adds cache creation job to the job queue, if the CacheService has been configured with a
    * CacheCreationJobName.
    *
-   * @param jobProperties Property valueMap to send to the CacheService's JobConsumer, if one has
-   *                      been configured.
+   * @param jobProperties Property valueMap to send to the CacheService's JobConsumer, if
+   *         one has been configured.
    */
-  public void addCacheCreationJob(final Map<String, Object> jobProperties) {
+  public void addCacheCreationJob(@Nonnull final Map<String, Object> jobProperties) {
     if (getJobManager() != null && StringUtils.isNotEmpty(getCacheCreationJobName())) {
       log.info("Starting cache job {}", getCacheCreationJobName().replaceAll("[\r\n]", ""));
       getJobManager().addJob(getCacheCreationJobName(), jobProperties);
@@ -71,13 +75,15 @@ public abstract class BaseCacheService extends BaseServiceResolverService
 
   protected abstract long getMinimumTimeBetweenCachePurges();
 
+  @Nonnull
   protected abstract String getCacheCreationJobName();
 
+  @Nullable
   protected abstract JobManager getJobManager();
 
   @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
   @Override
-  public void purgeAll(ResourceResolver resourceResolver) throws CachePurgeException {
+  public void purgeAll(@Nonnull ResourceResolver resourceResolver) throws CachePurgeException {
     if (isCachePurgeTimeoutExpired()) {
       try (ResourceResolver serviceResourceResolver = getServiceResourceResolver()) {
         if (serviceResourceResolver.isLive()) {
@@ -88,32 +94,33 @@ public abstract class BaseCacheService extends BaseServiceResolverService
           this.afterCachePurgeComplete(serviceResourceResolver);
         } else {
           log.error(
-              "{}: Failed to clear cached data. Service ResourceResolver was not live or was null",
-              getDisplayName().replaceAll("[\r\n]", ""));
+                  "{}: Failed to clear cached data. Service ResourceResolver was not live or was "
+                          + "null",
+                  getDisplayName().replaceAll("[\r\n]", ""));
           throw new CachePurgeException(String.format(
-              "Failed to purge cache %s. Resource Resolver was either null, or already closed.",
-              getDisplayName()));
+                  "Failed to purge cache %s. Resource Resolver was either null, or already closed.",
+                  getDisplayName()));
         }
       } catch (LoginException e) {
         log.error("{}: Failed to clear cached data.", getDisplayName().replaceAll("[\r\n]", ""));
         throw new CachePurgeException(String.format(
-            "Failed to purge cache %s. %s",
-            getDisplayName(), e.getMessage()));
+                "Failed to purge cache %s. %s",
+                getDisplayName(), e.getMessage()), e);
       }
     } else {
       log.debug("{}: Skipping cache purge, minimum time between purges has not elapsed.",
-          getDisplayName().replaceAll("[\r\n]", ""));
+                getDisplayName().replaceAll("[\r\n]", ""));
     }
   }
 
   @Override
-  public void enable(final ResourceResolver resourceResolver) throws CachePurgeException {
+  public void enable(@Nonnull final ResourceResolver resourceResolver) throws CachePurgeException {
     this.purgeAll(resourceResolver);
     this.isLive = true;
   }
 
   @Override
-  public void disable(final ResourceResolver resourceResolver) throws CachePurgeException {
+  public void disable(@Nonnull final ResourceResolver resourceResolver) throws CachePurgeException {
     this.purgeAll(resourceResolver);
     this.isLive = false;
   }
@@ -123,7 +130,7 @@ public abstract class BaseCacheService extends BaseServiceResolverService
    * cached.
    *
    * @return Whether the cacheService is live or not.  If a cache service is not live, no values
-   *     will be cached.
+   *         will be cached.
    */
   @Override
   public boolean isLive() {
@@ -135,6 +142,7 @@ public abstract class BaseCacheService extends BaseServiceResolverService
    *
    * @return Date that the cache was last purged.
    */
+  @Nullable
   @Override
   public Date getLastPurged() {
     if (lastPurged == null) {
@@ -148,6 +156,7 @@ public abstract class BaseCacheService extends BaseServiceResolverService
    *
    * @return User ID of user or service user who lasted purged the cache.
    */
+  @Nullable
   @Override
   public String getLastPurgedBy() {
     return lastPurgedBy;
@@ -158,18 +167,22 @@ public abstract class BaseCacheService extends BaseServiceResolverService
    *
    * @return Service display name.
    */
+  @Nonnull
   public String getServiceClassName() {
     return getClass().getAnnotatedInterfaces()[0].getType().getTypeName();
   }
 
   protected boolean isCachePurgeTimeoutExpired() {
-    return getTimeSinceLastPurge() == null
-           || getTimeSinceLastPurge() > getMinimumTimeBetweenCachePurges();
+    Long timeSinceLastPurge = getTimeSinceLastPurge();
+    return timeSinceLastPurge == null
+            || timeSinceLastPurge > getMinimumTimeBetweenCachePurges();
   }
 
+  @Nullable
   private Long getTimeSinceLastPurge() {
-    if (getLastPurged() != null) {
-      return new Date().getTime() - getLastPurged().getTime();
+    Date lastPurged = getLastPurged();
+    if (lastPurged != null) {
+      return new Date().getTime() - lastPurged.getTime();
     }
     return null;
   }

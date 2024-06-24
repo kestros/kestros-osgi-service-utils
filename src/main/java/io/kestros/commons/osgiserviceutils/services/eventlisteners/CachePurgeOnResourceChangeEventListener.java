@@ -22,6 +22,8 @@ package io.kestros.commons.osgiserviceutils.services.eventlisteners;
 import io.kestros.commons.osgiserviceutils.services.ManagedService;
 import io.kestros.commons.osgiserviceutils.services.cache.CacheService;
 import java.util.List;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.api.resource.observation.ResourceChangeListener;
 
@@ -37,6 +39,7 @@ public interface CachePurgeOnResourceChangeEventListener
    * @param <T> Extends {@link CacheService}
    * @return {@link CacheService} implementations to purge.
    */
+  @Nonnull
   <T extends CacheService> List<T> getCacheServices();
 
   /**
@@ -44,6 +47,7 @@ public interface CachePurgeOnResourceChangeEventListener
    *
    * @return ResourceResolverFactory used to get ServiceResourceResolver.
    */
+  @Nullable
   ResourceResolverFactory getResourceResolverFactory();
 
 }

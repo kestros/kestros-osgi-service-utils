@@ -26,11 +26,13 @@ import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component(immediate = true,
            service = SampleServiceResolverService.class)
 public class SampleServiceResolverService extends BaseServiceResolverService {
 
+  private static final Logger LOG = LoggerFactory.getLogger(SampleServiceResolverService.class);
   @Reference
   private ResourceResolverFactory resourceResolverFactory;
 
@@ -42,7 +44,7 @@ public class SampleServiceResolverService extends BaseServiceResolverService {
   @Nonnull
   @Override
   protected Logger getLogger() {
-    return null;
+    return LOG;
   }
 
   @Override

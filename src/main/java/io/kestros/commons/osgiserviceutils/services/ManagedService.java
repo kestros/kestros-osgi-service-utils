@@ -20,6 +20,7 @@
 package io.kestros.commons.osgiserviceutils.services;
 
 import io.kestros.commons.osgiserviceutils.healthchecks.BaseManagedServiceHealthCheck;
+import javax.annotation.Nonnull;
 import org.apache.felix.hc.api.FormattingResultLog;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
@@ -35,6 +36,7 @@ public interface ManagedService {
    *
    * @return Displayed name of cache.
    */
+  @Nonnull
   String getDisplayName();
 
   /**
@@ -43,7 +45,7 @@ public interface ManagedService {
    * @param componentContext ComponentContext.
    */
   @Activate
-  void activate(ComponentContext componentContext);
+  void activate(@Nonnull final ComponentContext componentContext);
 
   /**
    * Deactivates the Service.
@@ -51,7 +53,7 @@ public interface ManagedService {
    * @param componentContext ComponentContext.
    */
   @Deactivate
-  void deactivate(ComponentContext componentContext);
+  void deactivate(@Nonnull final ComponentContext componentContext);
 
   /**
    * Specific health checks to run on service health check, if using
@@ -59,6 +61,6 @@ public interface ManagedService {
    *
    * @param log HealthCheck log.
    */
-  void runAdditionalHealthChecks(FormattingResultLog log);
+  void runAdditionalHealthChecks(@Nonnull final FormattingResultLog log);
 
 }
