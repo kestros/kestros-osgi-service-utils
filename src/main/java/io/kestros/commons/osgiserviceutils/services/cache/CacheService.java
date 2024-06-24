@@ -23,12 +23,14 @@ import io.kestros.commons.osgiserviceutils.exceptions.CachePurgeException;
 import io.kestros.commons.osgiserviceutils.services.ManagedService;
 import java.io.Serializable;
 import java.util.Date;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.apache.sling.api.resource.ResourceResolver;
 
 /**
  * Manages the managing, building, purging and retrieval of Cached values.
  */
-public interface CacheService extends Serializable, ManagedService {
+public interface CacheService extends ManagedService {
 
   /**
    * Enables cache service to allow caching and value retrieval. Purges caches before enabling.
@@ -36,7 +38,7 @@ public interface CacheService extends Serializable, ManagedService {
    * @param resourceResolver ResourceResolver for user performing cache purge.
    * @throws CachePurgeException CacheService failed to purge all cached values.
    */
-  void enable(ResourceResolver resourceResolver) throws CachePurgeException;
+  void enable(@Nonnull final ResourceResolver resourceResolver) throws CachePurgeException;
 
   /**
    * Disables cache service to prevent caching and value retrieval. Purges caches disabling.
@@ -44,7 +46,7 @@ public interface CacheService extends Serializable, ManagedService {
    * @param resourceResolver ResourceResolver for user performing cache purge.
    * @throws CachePurgeException CacheService failed to purge all cached values.
    */
-  void disable(ResourceResolver resourceResolver) throws CachePurgeException;
+  void disable(@Nonnull final ResourceResolver resourceResolver) throws CachePurgeException;
 
   /**
    * Whether the cache service is enabled.
@@ -58,6 +60,7 @@ public interface CacheService extends Serializable, ManagedService {
    *
    * @return Date the last purgeAll was performed.
    */
+  @Nullable
   Date getLastPurged();
 
   /**
@@ -65,6 +68,7 @@ public interface CacheService extends Serializable, ManagedService {
    *
    * @return UserID that performed the last purgeAll.
    */
+  @Nullable
   String getLastPurgedBy();
 
   /**
@@ -73,6 +77,6 @@ public interface CacheService extends Serializable, ManagedService {
    * @param resourceResolver ResourceResolver for user performing cache purge.
    * @throws CachePurgeException CacheService failed to purge all cached values.
    */
-  void purgeAll(ResourceResolver resourceResolver) throws CachePurgeException;
+  void purgeAll(@Nonnull final ResourceResolver resourceResolver) throws CachePurgeException;
 
 }

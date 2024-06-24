@@ -20,6 +20,8 @@
 package io.kestros.commons.osgiserviceutils.healthchecks;
 
 import io.kestros.commons.osgiserviceutils.services.ManagedService;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.apache.felix.hc.api.FormattingResultLog;
 import org.apache.felix.hc.api.HealthCheck;
 import org.apache.felix.hc.api.Result;
@@ -35,6 +37,7 @@ public abstract class BaseManagedServiceHealthCheck implements HealthCheck {
    *
    * @return Service to run HealthChecks on.
    */
+  @Nullable
   public abstract ManagedService getManagedService();
 
   /**
@@ -42,19 +45,21 @@ public abstract class BaseManagedServiceHealthCheck implements HealthCheck {
    *
    * @return Name of service that is being checked.
    */
+  @Nonnull
   public abstract String getServiceName();
 
+  @Nonnull
   @Override
   public Result execute() {
     FormattingResultLog log = new FormattingResultLog();
-    log.debug(String.format("Starting Health Check for managed service."));
+    log.debug("Starting Health Check for managed service.");
     if (getManagedService() == null) {
       log.critical(String.format("%s is not registered.", getServiceName()));
     } else {
       getManagedService().runAdditionalHealthChecks(log);
-      if (log.getAggregateStatus().equals(Status.OK)) {
+      if (log.getAggregateStatus().name().equals(Status.OK.name())) {
         log.info(String.format("%s is registered and running properly.",
-            getManagedService().getDisplayName()));
+                               getManagedService().getDisplayName()));
       }
     }
     return new Result(log);

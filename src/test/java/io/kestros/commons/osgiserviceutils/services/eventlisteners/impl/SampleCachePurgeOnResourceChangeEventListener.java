@@ -33,6 +33,7 @@ import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicyOption;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component(service = ResourceChangeListener.class,
            property = {ResourceChangeListener.CHANGES + "=ADDED",
@@ -44,6 +45,8 @@ import org.slf4j.Logger;
            immediate = true)
 public class SampleCachePurgeOnResourceChangeEventListener
     extends BaseCachePurgeOnResourceChangeEventListener {
+
+  private static final Logger LOG = LoggerFactory.getLogger(SampleCachePurgeOnResourceChangeEventListener.class);
 
   @Reference(cardinality = ReferenceCardinality.OPTIONAL,
              policyOption = ReferencePolicyOption.GREEDY)
@@ -85,7 +88,7 @@ public class SampleCachePurgeOnResourceChangeEventListener
   @Nonnull
   @Override
   protected Logger getLogger() {
-    return null;
+    return LOG;
   }
 
   @Override

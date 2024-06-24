@@ -27,6 +27,8 @@ import io.kestros.commons.structuredslingmodels.exceptions.ResourceNotFoundExcep
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.apache.felix.hc.api.FormattingResultLog;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -44,6 +46,7 @@ public abstract class BaseServiceResolverService implements ManagedService {
 
   private ComponentContext componentContext;
 
+  @Nonnull
   protected abstract String getServiceUserName();
 
   /**
@@ -52,7 +55,7 @@ public abstract class BaseServiceResolverService implements ManagedService {
    * @param ctx ComponentContext.
    */
   @Activate
-  public void activate(final ComponentContext ctx) {
+  public void activate(@Nonnull final ComponentContext ctx) {
     componentContext = ctx;
   }
 
@@ -62,7 +65,7 @@ public abstract class BaseServiceResolverService implements ManagedService {
    * @param componentContext ComponentContext.
    */
   @Deactivate
-  public void deactivate(ComponentContext componentContext) {
+  public void deactivate(@Nonnull ComponentContext componentContext) {
   }
 
   /**
@@ -72,24 +75,25 @@ public abstract class BaseServiceResolverService implements ManagedService {
    *
    * @throws LoginException If unable to login as service user.
    */
+  @Nonnull
   public ResourceResolver getServiceResourceResolver() throws LoginException {
     final Map<String, Object> params = Collections.singletonMap(
-        ResourceResolverFactory.SUBSERVICE, getServiceUserName());
+            ResourceResolverFactory.SUBSERVICE, getServiceUserName());
     if (getResourceResolverFactory() != null) {
-      if (getLogger() != null) {
-        getLogger().debug("Getting service resource resolver for {}.",
-                getServiceUserName().replaceAll("[\r\n]", ""));
-      }
+      getLogger().debug("Getting service resource resolver for {}.",
+                        getServiceUserName().replaceAll("[\r\n]", ""));
       return getResourceResolverFactory().getServiceResourceResolver(params);
     } else {
-      throw new LoginException("Resource resolver factory was null");
+      throw new LoginException(String.format(
+              "Unable to get ServiceResourceResolver for %s. ResourceResolverFactory is null.",
+              getServiceUserName()));
     }
   }
 
 
   @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
   @Override
-  public void runAdditionalHealthChecks(FormattingResultLog log) {
+  public void runAdditionalHealthChecks(@Nonnull FormattingResultLog log) {
     try (ResourceResolver resourceResolver = getServiceResourceResolver()) {
       if (resourceResolver.isLive()) {
         log.debug("Service ResourceResolver is live.");
@@ -112,12 +116,16 @@ public abstract class BaseServiceResolverService implements ManagedService {
 
   }
 
+  @Nonnull
   protected abstract Logger getLogger();
 
+  @Nonnull
   protected abstract List<String> getRequiredResourcePaths();
 
+  @Nullable
   protected abstract ResourceResolverFactory getResourceResolverFactory();
 
+  @Nonnull
   protected ComponentContext getComponentContext() {
     return this.componentContext;
   }
