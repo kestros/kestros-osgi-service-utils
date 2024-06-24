@@ -19,19 +19,21 @@
 
 package io.kestros.commons.osgiserviceutils.exceptions;
 
+import javax.annotation.Nonnull;
+
 /**
  * Exception thrown when a CacheService fails to retrieve a cached value.
  */
 public class CacheRetrievalException extends Exception {
 
-  private static final long serialVersionUID = -8169362340090402124L;
+  private static final long serialVersionUID = 1L;
 
   /**
    * Exception thrown when a CacheService fails to retrieve a cached value.
    *
    * @param message Cause message.
    */
-  public CacheRetrievalException(final String message) {
+  public CacheRetrievalException(@Nonnull final String message) {
     super(message);
   }
 

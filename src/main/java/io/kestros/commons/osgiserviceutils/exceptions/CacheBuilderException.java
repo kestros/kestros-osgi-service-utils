@@ -20,6 +20,7 @@
 package io.kestros.commons.osgiserviceutils.exceptions;
 
 import io.kestros.commons.osgiserviceutils.services.cache.CacheService;
+import javax.annotation.Nonnull;
 
 /**
  * Exception thrown when a {@link CacheService}
@@ -27,7 +28,7 @@ import io.kestros.commons.osgiserviceutils.services.cache.CacheService;
  */
 public class CacheBuilderException extends Exception {
 
-  private static final long serialVersionUID = -8725381618347773510L;
+  private static final long serialVersionUID = 1L;
 
   /**
    * Exception thrown when a {@link CacheService}
@@ -35,8 +36,19 @@ public class CacheBuilderException extends Exception {
    *
    * @param message Cause message.
    */
-  public CacheBuilderException(final String message) {
+  public CacheBuilderException(@Nonnull final String message) {
     super(message);
+  }
+
+  /**
+   * Exception thrown when a {@link CacheService}
+   * fails to cache a value.
+   *
+   * @param message Cause message.
+   * @param cause Cause of the exception.
+   */
+  public CacheBuilderException(@Nonnull final String message, @Nonnull final Throwable cause) {
+    super(message, cause);
   }
 
 }

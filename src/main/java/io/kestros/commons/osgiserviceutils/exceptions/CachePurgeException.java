@@ -19,19 +19,31 @@
 
 package io.kestros.commons.osgiserviceutils.exceptions;
 
+import javax.annotation.Nonnull;
+
 /**
  * Exception thrown when a cache failed to purge its cached data.
  */
 public class CachePurgeException extends Exception {
 
-  private static final long serialVersionUID = -8316555778268973921L;
+  private static final long serialVersionUID = 1L;
 
   /**
    * Exception thrown when a cache failed to purge its cached data.
    *
    * @param message Cause message.
    */
-  public CachePurgeException(final String message) {
+  public CachePurgeException(@Nonnull final String message) {
     super(message);
+  }
+
+  /**
+   * Exception thrown when a cache failed to purge its cached data.
+   *
+   * @param message Cause message.
+   * @param cause Cause of the exception.
+   */
+  public CachePurgeException(@Nonnull final String message, @Nonnull final Throwable cause) {
+    super(message, cause);
   }
 }

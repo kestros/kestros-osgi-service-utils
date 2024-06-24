@@ -87,7 +87,7 @@ public class BaseCachePurgeOnResourceChangeEventListenerTest {
 
     assertNotNull(eventListener.getServiceResourceResolver());
     verify(resourceResolverFactory, times(2)).getServiceResourceResolver(any());
-    verify(eventListener, times(2)).getServiceUserName();
+    verify(eventListener, times(4)).getServiceUserName();
   }
 
   @Test
@@ -105,7 +105,7 @@ public class BaseCachePurgeOnResourceChangeEventListenerTest {
     assertNotNull(eventListener.getServiceResourceResolver());
 
     verify(resourceResolverFactory, times(2)).getServiceResourceResolver(any());
-    verify(eventListener, times(3)).getServiceUserName();
+    verify(eventListener, times(6)).getServiceUserName();
   }
 
   @Test(expected = LoginException.class)

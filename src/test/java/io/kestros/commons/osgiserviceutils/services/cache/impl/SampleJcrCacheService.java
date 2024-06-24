@@ -21,16 +21,16 @@ package io.kestros.commons.osgiserviceutils.services.cache.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.felix.hc.api.FormattingResultLog;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.event.jobs.JobManager;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SampleJcrCacheService extends JcrFileCacheService {
 
-
+  private static final Logger LOG = LoggerFactory.getLogger(SampleJcrCacheService.class);
   @Reference
   private ResourceResolverFactory resourceResolverFactory;
 
@@ -67,7 +67,7 @@ public class SampleJcrCacheService extends JcrFileCacheService {
 
   @Override
   protected Logger getLogger() {
-    return null;
+    return LOG;
   }
 
   @Override

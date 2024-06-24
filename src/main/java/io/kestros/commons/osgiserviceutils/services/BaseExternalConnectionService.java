@@ -20,6 +20,8 @@
 package io.kestros.commons.osgiserviceutils.services;
 
 import java.util.Date;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Baseline logic for external connection services. Manages timestamps for recent successful and
@@ -37,11 +39,12 @@ public abstract class BaseExternalConnectionService implements ExternalConnectio
   }
 
   @Override
-  public void connectionFailed(String reason) {
+  public void connectionFailed(@Nonnull String reason) {
     this.getLastConnectionFailureReason = reason;
     this.lastConnectionFailureDate = new Date();
   }
 
+  @Nullable
   @Override
   public Date getLastSuccessfulConnection() {
     if (this.lastConnectionSuccessDate != null) {
@@ -50,6 +53,7 @@ public abstract class BaseExternalConnectionService implements ExternalConnectio
     return null;
   }
 
+  @Nullable
   @Override
   public Date getLastFailedConnection() {
     if (this.lastConnectionFailureDate != null) {
@@ -58,6 +62,7 @@ public abstract class BaseExternalConnectionService implements ExternalConnectio
     return null;
   }
 
+  @Nullable
   @Override
   public String getLastFailedConnectionReason() {
     return this.getLastConnectionFailureReason;
