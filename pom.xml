@@ -32,7 +32,7 @@
 
   <groupId>io.kestros.commons</groupId>
   <artifactId>kestros-osgi-service-utils</artifactId>
-  <version>0.1.10</version>
+  <version>0.1.11-SNAPSHOT</version>
 
   <packaging>bundle</packaging>
 

@@ -34,4 +34,12 @@ public class CacheRetrievalExceptionTest {
   public void testCacheRetrievalException() {
     assertEquals("cache retrieval exception", new CacheRetrievalException("cache retrieval exception").getMessage());
   }
+
+  @Test
+  public void testCacheRetrievalExceptionWithCause() {
+    Throwable cause = new Throwable();
+    CacheRetrievalException exception = new CacheRetrievalException("cache retrieval exception", cause);
+    assertEquals("cache retrieval exception", exception.getMessage());
+    assertEquals(cause, exception.getCause());
+  }
 }

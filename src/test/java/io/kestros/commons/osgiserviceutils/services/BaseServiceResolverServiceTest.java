@@ -22,11 +22,12 @@ package io.kestros.commons.osgiserviceutils.services;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
 import org.apache.felix.hc.api.FormattingResultLog;
 import org.apache.felix.hc.api.Result;
 import org.apache.sling.api.resource.LoginException;
@@ -93,5 +94,33 @@ public class BaseServiceResolverServiceTest {
     FormattingResultLog log = new FormattingResultLog();
     serviceResolverService.runAdditionalHealthChecks(log);
     assertEquals(Result.Status.OK, log.getAggregateStatus());
+  }
+
+  @Test
+  public void testRunAdditionalHealthChecksWhenResolverIsNotLive() throws LoginException {
+    ResourceResolver mockResourceResolver = mock(ResourceResolver.class);
+    when(mockResourceResolver.isLive()).thenReturn(false);
+    FormattingResultLog log = new FormattingResultLog();
+    doReturn(mockResourceResolver).when(serviceResolverService).getServiceResourceResolver();
+
+    serviceResolverService.runAdditionalHealthChecks(log);
+    assertEquals(Result.Status.CRITICAL, log.getAggregateStatus());
+  }
+
+  @Test
+  public void testRunAdditionalHealthChecksWhenLoginException() throws LoginException {
+    doThrow(new LoginException("Test Exception")).when(serviceResolverService)
+            .getServiceResourceResolver();
+    FormattingResultLog log = new FormattingResultLog();
+    serviceResolverService.runAdditionalHealthChecks(log);
+    assertEquals(Result.Status.CRITICAL, log.getAggregateStatus());
+  }
+
+  @Test
+  public void testRunAdditionalHealthChecksWhenMissingRequiredResource() {
+    doReturn(Arrays.asList("/content")).when(serviceResolverService).getRequiredResourcePaths();
+    FormattingResultLog log = new FormattingResultLog();
+    serviceResolverService.runAdditionalHealthChecks(log);
+    assertEquals(Result.Status.CRITICAL, log.getAggregateStatus());
   }
 }

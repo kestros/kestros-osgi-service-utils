@@ -37,4 +37,14 @@ public class CacheRetrievalException extends Exception {
     super(message);
   }
 
+  /**
+   * Exception thrown when a CacheService fails to retrieve a cached value.
+   *
+   * @param message Cause message.
+   * @param cause Cause of the exception.
+   */
+  public CacheRetrievalException(@Nonnull final String message, @Nonnull final Throwable cause) {
+    super(message, cause);
+  }
+
 }
