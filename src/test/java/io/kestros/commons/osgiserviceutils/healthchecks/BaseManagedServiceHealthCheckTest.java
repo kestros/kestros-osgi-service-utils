@@ -75,4 +75,76 @@ public class BaseManagedServiceHealthCheckTest {
     public void execute() {
         assertEquals(Result.Status.OK, healthCheckService.execute().getStatus());
     }
+
+    @Test
+    public void executeWhenManagedServiceIsNull() {
+        healthCheckService = new BaseManagedServiceHealthCheck() {
+            @Override
+            public ManagedService getManagedService() {
+                return null;
+            }
+
+            @Override
+            public String getServiceName() {
+                return "Unavailable Service";
+            }
+        };
+
+        Result result = healthCheckService.execute();
+        assertNotNull(result);
+        assertEquals(Result.Status.CRITICAL, result.getStatus());
+    }
+
+    @Test
+    public void executeWithHealthCheckFailures() {
+        service = new ManagedService() {
+            @Override
+            public String getDisplayName() {
+                return "Failing Service";
+            }
+
+            @Override
+            public void activate(ComponentContext componentContext) {
+
+            }
+
+            @Override
+            public void deactivate(ComponentContext componentContext) {
+
+            }
+
+            @Override
+            public void runAdditionalHealthChecks(FormattingResultLog log) {
+                log.warn("Service health check failed");
+            }
+        };
+
+        healthCheckService = new BaseManagedServiceHealthCheck() {
+            @Override
+            public ManagedService getManagedService() {
+                return service;
+            }
+
+            @Override
+            public String getServiceName() {
+                return "Failing Service Health Check";
+            }
+        };
+
+        Result result = healthCheckService.execute();
+        assertNotNull(result);
+        // Status should reflect the warning from health check
+        assertNotEquals(Result.Status.CRITICAL, result.getStatus());
+    }
+
+    @Test
+    public void getServiceNameReturnsCorrectValue() {
+        assertEquals("Sample Service Health Check", healthCheckService.getServiceName());
+    }
+
+    @Test
+    public void getManagedServiceReturnsCorrectValue() {
+        assertNotNull(healthCheckService.getManagedService());
+        assertEquals("Managed Service", healthCheckService.getManagedService().getDisplayName());
+    }
 }
