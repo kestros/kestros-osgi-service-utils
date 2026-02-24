@@ -176,4 +176,89 @@ public class BaseCachePurgeOnResourceChangeEventListenerTest {
     verify(cacheService, times(1)).purgeAll(any());
   }
 
+  @Test
+  public void testOnChangeWhenCachePurgeExceptionWithMessage() throws Exception {
+    CachePurgeException exception = new CachePurgeException("Test purge error");
+    doThrow(exception).when(cacheService).purgeAll(any(ResourceResolver.class));
+    eventListener = spy(new SampleCachePurgeOnResourceChangeEventListener());
+    doReturn(resourceResolverFactory).when(eventListener).getResourceResolverFactory();
+    cacheServices.add(cacheService);
+    doReturn(cacheServices).when(eventListener).getCacheServices();
+
+    List<ResourceChange> changeList = new ArrayList<>();
+    eventListener.activate(context.componentContext());
+    eventListener.onChange(changeList);
+    verify(cacheService, times(1)).purgeAll(any(ResourceResolver.class));
+  }
+
+  @Test
+  public void testOnChangeWhenLoginExceptionOccurs() throws Exception {
+    eventListener = spy(new SampleCachePurgeOnResourceChangeEventListener());
+    doReturn(resourceResolverFactory).when(eventListener).getResourceResolverFactory();
+    when(resourceResolverFactory.getServiceResourceResolver(any())).thenThrow(
+        new LoginException("Service login failed"));
+
+    List<ResourceChange> changeList = new ArrayList<>();
+    eventListener.onChange(changeList);
+    verify(cacheService, never()).purgeAll(any(ResourceResolver.class));
+  }
+
+  @Test
+  public void testOnChangeWithMultipleCacheServices() throws Exception {
+    eventListener = spy(new SampleCachePurgeOnResourceChangeEventListener());
+    doReturn(resourceResolverFactory).when(eventListener).getResourceResolverFactory();
+
+    CacheService cacheService2 = mock(CacheService.class);
+    CacheService cacheService3 = mock(CacheService.class);
+
+    cacheServices.add(cacheService);
+    cacheServices.add(cacheService2);
+    cacheServices.add(cacheService3);
+    doReturn(cacheServices).when(eventListener).getCacheServices();
+
+    List<ResourceChange> changeList = new ArrayList<>();
+    eventListener.activate(context.componentContext());
+    eventListener.onChange(changeList);
+
+    verify(cacheService, times(1)).purgeAll(any(ResourceResolver.class));
+    verify(cacheService2, times(1)).purgeAll(any(ResourceResolver.class));
+    verify(cacheService3, times(1)).purgeAll(any(ResourceResolver.class));
+  }
+
+  @Test
+  public void testActivateWhenPurgeOnActivationIsTrue() throws LoginException, CachePurgeException {
+    eventListener = spy(new SampleCachePurgeOnResourceChangeEventListener() {
+      @Override
+      protected boolean purgeOnActivation() {
+        return true;
+      }
+    });
+    doReturn(resourceResolverFactory).when(eventListener).getResourceResolverFactory();
+    cacheServices.add(cacheService);
+    doReturn(cacheServices).when(eventListener).getCacheServices();
+
+    eventListener.activate(context.componentContext());
+
+    // Verify purge was called during activation
+    verify(cacheService, times(1)).purgeAll(any(ResourceResolver.class));
+  }
+
+  @Test
+  public void testActivateWhenPurgeOnActivationIsFalse() throws LoginException, CachePurgeException {
+    eventListener = spy(new SampleCachePurgeOnResourceChangeEventListener() {
+      @Override
+      protected boolean purgeOnActivation() {
+        return false;
+      }
+    });
+    doReturn(resourceResolverFactory).when(eventListener).getResourceResolverFactory();
+    cacheServices.add(cacheService);
+    doReturn(cacheServices).when(eventListener).getCacheServices();
+
+    eventListener.activate(context.componentContext());
+
+    // Verify purge was NOT called during activation
+    verify(cacheService, never()).purgeAll(any(ResourceResolver.class));
+  }
+
 }
