@@ -85,4 +85,50 @@ public class ResourceCreationUtilsTest {
     verify(resourceResolver, times(1)).commit();
   }
 
+  @Test
+  public void testCreateTextFileResourceWithEmptyContent() throws PersistenceException {
+    resource = context.create().resource("/resource");
+    ResourceCreationUtils.createTextFileResource("", "text/plain", resource,
+        "empty-file", resourceResolver);
+
+    resource = resourceResolver.getResource("/resource/empty-file");
+    assertNotNull(resource);
+    assertNotNull(resource.getChild("jcr:content"));
+  }
+
+  @Test
+  public void testCreateTextFileResourceWithSpecialCharacters() throws PersistenceException {
+    resource = context.create().resource("/resource");
+    String specialContent = "Test with special chars: !@#$%^&*()";
+    ResourceCreationUtils.createTextFileResource(specialContent, "text/plain", resource,
+        "special-file", resourceResolver);
+
+    resource = resourceResolver.getResource("/resource/special-file");
+    assertNotNull(resource);
+    assertNotNull(resource.getChild("jcr:content"));
+  }
+
+  @Test
+  public void testCreateTextFileResourceWithUtf8Content() throws PersistenceException {
+    resource = context.create().resource("/resource");
+    String utf8Content = "Test with UTF-8: 你好世界 مرحبا بالعالم";
+    ResourceCreationUtils.createTextFileResource(utf8Content, "text/plain;charset=UTF-8", resource,
+        "utf8-file", resourceResolver);
+
+    resource = resourceResolver.getResource("/resource/utf8-file");
+    assertNotNull(resource);
+    assertNotNull(resource.getChild("jcr:content"));
+  }
+
+  @Test
+  public void testCreateTextFileResourceAndCommitWithEmptyContent() throws PersistenceException {
+    resource = context.create().resource("/resource");
+    ResourceCreationUtils.createTextFileResourceAndCommit("", "text/plain", resource,
+        "empty-committed-file", resourceResolver);
+
+    resource = resourceResolver.getResource("/resource/empty-committed-file");
+    assertNotNull(resource);
+    verify(resourceResolver, times(1)).commit();
+  }
+
 }

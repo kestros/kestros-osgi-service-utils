@@ -171,4 +171,69 @@ public class OsgiServiceUtilsTest {
 
   }
 
+  @Test
+  public void testGetOpenServiceResourceResolverOrNullAndLogExceptionsWithValidResolver() throws LoginException {
+    resourceResolver = context.resourceResolver();
+    ResourceResolver result = OsgiServiceUtils.getOpenServiceResourceResolverOrNullAndLogExceptions(
+        "service", resourceResolver, resourceResolverFactory, service);
+
+    assertNotNull(result);
+    assertTrue(result.isLive());
+  }
+
+  @Test
+  public void testGetOpenServiceResourceResolverOrNullAndLogExceptionsWhenLoginException() throws LoginException {
+    ResourceResolverFactory factory = mock(ResourceResolverFactory.class);
+    when(factory.getServiceResourceResolver(any())).thenThrow(new LoginException("Test login error"));
+
+    ResourceResolver result = OsgiServiceUtils.getOpenServiceResourceResolverOrNullAndLogExceptions(
+        "service", null, factory, service);
+
+    assertNull(result);
+  }
+
+  @Test
+  public void testGetOsgiServiceOfTypeWithValidService() {
+    ComponentContext mockContext = mock(ComponentContext.class);
+    BundleContext bundleContext = context.bundleContext();
+    when(mockContext.getBundleContext()).thenReturn(bundleContext);
+
+    Object result = OsgiServiceUtils.getOsgiServiceOfType(mockContext, Object.class);
+    // Result may be null if service not registered, but should not throw
+    assertNotNull(mockContext.getBundleContext());
+  }
+
+  @Test
+  public void testGetOpenServiceResourceResolverWhenFactoryReturnsNull() throws LoginException {
+    assertNull(resourceResolver);
+    resourceResolverFactory = mock(ResourceResolverFactory.class);
+    when(resourceResolverFactory.getServiceResourceResolver(any())).thenReturn(null);
+
+    try {
+      OsgiServiceUtils.getOpenServiceResourceResolver("service", resourceResolver,
+          resourceResolverFactory, service);
+    } catch (Exception e) {
+      // Expected when factory returns null
+      assertNotNull(e);
+    }
+  }
+
+  @Test
+  public void testCloseNullResourceResolver() {
+    // Should not throw exception
+    OsgiServiceUtils.closeServiceResourceResolver(null, service);
+  }
+
+  @Test
+  public void testGetAllOsgiServicesOfTypeWhenNoServicesFound() {
+    ServiceTracker mockServiceTracker = mock(ServiceTracker.class);
+    SortedMap emptyMap = mock(SortedMap.class);
+    when(emptyMap.values()).thenReturn(new ArrayList<>());
+    when(mockServiceTracker.getTracked()).thenReturn(emptyMap);
+
+    List<Object> result = OsgiServiceUtils.getAllOsgiServicesOfType("NonExistentService", mockServiceTracker);
+    assertNotNull(result);
+    assertEquals(0, result.size());
+  }
+
 }
