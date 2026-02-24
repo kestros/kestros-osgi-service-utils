@@ -123,4 +123,59 @@ public class BaseServiceResolverServiceTest {
     serviceResolverService.runAdditionalHealthChecks(log);
     assertEquals(Result.Status.CRITICAL, log.getAggregateStatus());
   }
+
+  @Test(expected = LoginException.class)
+  public void testGetServiceResourceResolverWhenFactoryReturnsNull() throws LoginException {
+    doReturn(null).when(serviceResolverService).getResourceResolverFactory();
+    serviceResolverService.getServiceResourceResolver();
+  }
+
+  @Test(expected = LoginException.class)
+  public void testGetServiceResourceResolverWhenLoginException() throws LoginException {
+    when(resourceResolverFactory.getServiceResourceResolver(any())).thenThrow(
+        new LoginException("Service user authentication failed"));
+    serviceResolverService.getServiceResourceResolver();
+  }
+
+  @Test
+  public void testGetComponentContext() {
+    serviceResolverService.activate(context.componentContext());
+    assertEquals(context.componentContext(), serviceResolverService.getComponentContext());
+  }
+
+  @Test
+  public void testRunAdditionalHealthChecksWithMultipleRequiredResources() {
+    doReturn(Arrays.asList("/content/path1", "/content/path2", "/content/path3"))
+        .when(serviceResolverService).getRequiredResourcePaths();
+    FormattingResultLog log = new FormattingResultLog();
+    serviceResolverService.runAdditionalHealthChecks(log);
+    // Should be CRITICAL since paths don't exist
+    assertEquals(Result.Status.CRITICAL, log.getAggregateStatus());
+  }
+
+  @Test
+  public void testRunAdditionalHealthChecksWhenRequiredResourcePathsIsNull() throws LoginException {
+    doReturn(null).when(serviceResolverService).getRequiredResourcePaths();
+    FormattingResultLog log = new FormattingResultLog();
+    serviceResolverService.activate(context.componentContext());
+    serviceResolverService.runAdditionalHealthChecks(log);
+    assertEquals(Result.Status.OK, log.getAggregateStatus());
+  }
+
+  @Test
+  public void testRunAdditionalHealthChecksWhenRequiredResourcePathsIsEmpty() throws LoginException {
+    doReturn(Arrays.asList()).when(serviceResolverService).getRequiredResourcePaths();
+    FormattingResultLog log = new FormattingResultLog();
+    serviceResolverService.activate(context.componentContext());
+    serviceResolverService.runAdditionalHealthChecks(log);
+    assertEquals(Result.Status.OK, log.getAggregateStatus());
+  }
+
+  @Test
+  public void testGetServiceResourceResolverMultipleCalls() throws LoginException {
+    serviceResolverService.activate(context.componentContext());
+    ResourceResolver first = serviceResolverService.getServiceResourceResolver();
+    ResourceResolver second = serviceResolverService.getServiceResourceResolver();
+    assertEquals(first, second);
+  }
 }
