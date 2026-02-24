@@ -39,4 +39,30 @@ public class CachePurgeExceptionTest {
     assertEquals("Test Cause", exception.getCause().getMessage());
   }
 
+  @Test
+  public void testCachePurgeExceptionWithCauseOnly() {
+    Exception cause = new Exception("Cause");
+    CachePurgeException exception = new CachePurgeException("Wrapped Exception", cause);
+    assertEquals(cause, exception.getCause());
+  }
+
+  @Test
+  public void testCachePurgeExceptionWithEmptyMessage() {
+    CachePurgeException exception = new CachePurgeException("");
+    assertEquals("", exception.getMessage());
+  }
+
+  @Test
+  public void testCachePurgeExceptionIsException() {
+    CachePurgeException exception = new CachePurgeException("Test");
+    assertTrue(exception instanceof Exception);
+  }
+
+  @Test
+  public void testCachePurgeExceptionWithNullCause() {
+    CachePurgeException exception = new CachePurgeException("message", null);
+    assertEquals("message", exception.getMessage());
+    assertNull(exception.getCause());
+  }
+
 }

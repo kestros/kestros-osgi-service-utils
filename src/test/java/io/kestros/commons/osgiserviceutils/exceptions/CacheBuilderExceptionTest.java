@@ -39,4 +39,32 @@ public class CacheBuilderExceptionTest {
     assertEquals("Test Cause", exception.getCause().getMessage());
   }
 
+  @Test
+  public void testCacheBuilderExceptionWithCauseOnly() {
+    Exception cause = new Exception("Cause only");
+    CacheBuilderException exception = new CacheBuilderException("Wrapped Exception", cause);
+    assertEquals(cause, exception.getCause());
+  }
+
+  @Test
+  public void testCacheBuilderExceptionWithEmptyMessage() {
+    CacheBuilderException exception = new CacheBuilderException("");
+    assertEquals("", exception.getMessage());
+  }
+
+  @Test
+  public void testCacheBuilderExceptionIsException() {
+    CacheBuilderException exception = new CacheBuilderException("Test");
+    assertTrue(exception instanceof Exception);
+  }
+
+  @Test
+  public void testCacheBuilderExceptionWithMultipleCauses() {
+    Exception rootCause = new Exception("Root");
+    Exception cause = new Exception("Middle", rootCause);
+    CacheBuilderException exception = new CacheBuilderException("Test", cause);
+    assertEquals("Middle", exception.getCause().getMessage());
+    assertEquals("Root", exception.getCause().getCause().getMessage());
+  }
+
 }

@@ -42,4 +42,31 @@ public class CacheRetrievalExceptionTest {
     assertEquals("cache retrieval exception", exception.getMessage());
     assertEquals(cause, exception.getCause());
   }
+
+  @Test
+  public void testCacheRetrievalExceptionWithCauseOnly() {
+    Throwable cause = new Exception("cause message");
+    CacheRetrievalException exception = new CacheRetrievalException("Wrapped Exception", cause);
+    assertEquals(cause, exception.getCause());
+  }
+
+  @Test
+  public void testCacheRetrievalExceptionWithEmptyMessage() {
+    CacheRetrievalException exception = new CacheRetrievalException("");
+    assertEquals("", exception.getMessage());
+  }
+
+  @Test
+  public void testCacheRetrievalExceptionWithNullCause() {
+    CacheRetrievalException exception = new CacheRetrievalException("message", null);
+    assertEquals("message", exception.getMessage());
+    assertNull(exception.getCause());
+  }
+
+  @Test
+  public void testCacheRetrievalExceptionIsException() {
+    CacheRetrievalException exception = new CacheRetrievalException("message");
+    assertTrue(exception instanceof Exception);
+  }
+
 }
