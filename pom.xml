@@ -57,6 +57,29 @@
   <build>
     <sourceDirectory>src/main/java</sourceDirectory>
     <testSourceDirectory>src/test/java</testSourceDirectory>
+    <plugins>
+      <plugin>
+        <groupId>org.pitest</groupId>
+        <artifactId>pitest-maven</artifactId>
+        <version>1.15.3</version>
+        <configuration>
+          <targetClasses>
+            <param>io.kestros.commons.osgiserviceutils.*</param>
+          </targetClasses>
+          <targetTests>
+            <param>io.kestros.commons.osgiserviceutils.*</param>
+          </targetTests>
+          <mutationThreshold>60</mutationThreshold>
+          <coverageThreshold>60</coverageThreshold>
+          <outputFormats>
+            <outputFormat>HTML</outputFormat>
+            <outputFormat>XML</outputFormat>
+          </outputFormats>
+          <timestampedReports>false</timestampedReports>
+          <failWhenNoMutations>true</failWhenNoMutations>
+        </configuration>
+      </plugin>
+    </plugins>
   </build>
 
 </project>
