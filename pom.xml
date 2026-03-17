@@ -44,6 +44,8 @@
   <properties>
     <rootPackage>io.kestros.commons.osgiserviceutils</rootPackage>
     <bundleCategory>kestros</bundleCategory>
+    <sonar.host.url>http://192.168.86.216:9090</sonar.host.url>
+    <sonar.projectKey>kestros-osgi-service-utils</sonar.projectKey>
   </properties>
 
   <dependencies>
@@ -57,6 +59,15 @@
   <build>
     <sourceDirectory>src/main/java</sourceDirectory>
     <testSourceDirectory>src/test/java</testSourceDirectory>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.sonarsource.scanner.maven</groupId>
+          <artifactId>sonar-maven-plugin</artifactId>
+          <version>3.11.0.3922</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
   </build>
 
 </project>
