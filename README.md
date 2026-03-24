@@ -12,12 +12,8 @@ Nearly every Kestros module that registers an OSGi service depends on this bundl
 
 **Maven coordinates:**
 
-```xml
-<dependency>
-  <groupId>io.kestros.commons</groupId>
-  <artifactId>kestros-osgi-service-utils</artifactId>
-  <version>0.1.11</version>
-</dependency>
+```
+io.kestros.commons:kestros-osgi-service-utils
 ```
 
 **Build:**
@@ -29,11 +25,7 @@ mvn clean package
 **Deploy to a Sling instance:**
 
 ```bash
-curl -u admin:admin \
-  -F "action=install" \
-  -F "bundlestart=true" \
-  -F "bundlefile=@target/kestros-osgi-service-utils-0.1.11.jar" \
-  "http://localhost:8080/system/console/bundles"
+mvn clean install -P installBundle -Dsling.host=localhost -Dsling.port=8080
 ```
 
 ## Configuration
@@ -246,7 +238,7 @@ Static utility methods for creating JCR resources.
 
 | Dependency | Maven Coordinates |
 |------------|-------------------|
-| kestros-structured-sling-models | `io.kestros.commons:kestros-structured-sling-models:[0.2.5,0.2.99]` |
+| kestros-structured-sling-models | `io.kestros.commons:kestros-structured-sling-models` |
 | Apache Sling API | `org.apache.sling:org.apache.sling.api` |
 | Apache Felix Health Check API | `org.apache.felix:org.apache.felix.healthcheck.api` |
 | Apache Sling Event | `org.apache.sling:org.apache.sling.event` |
@@ -261,11 +253,3 @@ This is a foundational dependency. Nearly every Kestros service bundle depends o
 - `kestros-site-management-core`
 - `kestros-sling-ui-libraries`
 - `kestros-tasks` (application module)
-
-## Contribution Notes
-
-- **Branch from:** `develop`
-- **PR target:** `develop`
-- **Branch naming:** `{type}/TASK-NNN-short-description` (e.g. `fix/TASK-042-resolver-null-check`)
-- **Commit format:** `[kestros-osgi-service-utils]: <action>, <brief result>`
-- **Build verification:** Run `mvn clean package` before submitting; all tests must pass
