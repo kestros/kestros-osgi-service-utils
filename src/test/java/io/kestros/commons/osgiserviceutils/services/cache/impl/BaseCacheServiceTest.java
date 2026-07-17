@@ -178,6 +178,57 @@ public class BaseCacheServiceTest {
   }
 
   @Test
+  public void testImmediatePurgeCancelsPendingDeferredPurge()
+          throws CachePurgeException, InterruptedException, LoginException {
+    doReturn(resourceResolver).when(baseCacheService).getServiceResourceResolver();
+    // Deterministic cooldown control: real time is not consulted.
+    doReturn(true).when(baseCacheService).isCachePurgeTimeoutExpired();
+    baseCacheService.purgeAll(resourceResolver);           // purge #1
+    doReturn(false).when(baseCacheService).isCachePurgeTimeoutExpired();
+    baseCacheService.purgeAll(resourceResolver);           // deferred armed (~1050ms out)
+    doReturn(true).when(baseCacheService).isCachePurgeTimeoutExpired();
+    baseCacheService.purgeAll(resourceResolver);           // immediate purge #2 — cancels deferred
+    Thread.sleep(1400);                                    // past the deferred task's fire time
+    // Exactly two purges: the cancelled deferred task must not produce a third.
+    verify(baseCacheService, times(2)).doPurge(resourceResolver);
+  }
+
+  @Test
+  public void testDeferredPurgeRearmedWhenImmediatePurgeFails()
+          throws CachePurgeException, InterruptedException, LoginException {
+    doReturn(resourceResolver).when(baseCacheService).getServiceResourceResolver();
+    doReturn(true).when(baseCacheService).isCachePurgeTimeoutExpired();
+    baseCacheService.purgeAll(resourceResolver);           // purge #1 succeeds
+    doReturn(false).when(baseCacheService).isCachePurgeTimeoutExpired();
+    baseCacheService.purgeAll(resourceResolver);           // deferred armed
+
+    // Immediate purge cancels the deferred one, then fails.
+    doReturn(true).when(baseCacheService).isCachePurgeTimeoutExpired();
+    try {
+      doThrow(new CachePurgeException("transient failure")).when(baseCacheService).doPurge(any());
+    } catch (CachePurgeException e) {
+      // stubbing only
+    }
+    exception = null;
+    try {
+      baseCacheService.purgeAll(resourceResolver);
+    } catch (CachePurgeException e) {
+      exception = e;
+    }
+    assertNotNull(exception);
+
+    // Heal doPurge; the re-armed deferred purge must still fire on its own.
+    try {
+      org.mockito.Mockito.doCallRealMethod().when(baseCacheService).doPurge(any());
+    } catch (CachePurgeException e) {
+      // stubbing only
+    }
+    Thread.sleep(1400);
+    // #1 success + #2 failed attempt + #3 re-armed deferred success.
+    verify(baseCacheService, times(3)).doPurge(any());
+  }
+
+  @Test
   public void testPurgeAllWhenMultipleAttemptsAfterExpiration()
           throws CachePurgeException, InterruptedException, LoginException {
     assertNull(baseCacheService.getLastPurged());
