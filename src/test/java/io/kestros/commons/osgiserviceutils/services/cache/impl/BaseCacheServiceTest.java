@@ -135,7 +135,46 @@ public class BaseCacheServiceTest {
     verify(baseCacheService, times(1)).doPurge(resourceResolver);
     assertEquals(baseCacheService.getLastPurged().getTime(), firstPurgeDate.getTime());
     assertEquals("test-user", baseCacheService.getLastPurgedBy());
-    verify(resourceResolver, times(1)).getUserID();
+    // CONTRACT CHANGE: a request during the cooldown is no longer silently dropped — it records
+    // the requester and schedules a deferred purge, so getUserID is consulted for it as well.
+    verify(resourceResolver, times(2)).getUserID();
+  }
+
+  @Test
+  public void testPurgeRequestDuringCooldownIsDeferredNotDropped()
+          throws CachePurgeException, InterruptedException, LoginException {
+    doReturn(resourceResolver).when(baseCacheService).getServiceResourceResolver();
+    baseCacheService.purgeAll(resourceResolver);
+    verify(baseCacheService, times(1)).doPurge(resourceResolver);
+    Date firstPurgeDate = baseCacheService.getLastPurged();
+
+    // Request during the cooldown — previously this was silently dropped, leaving anything
+    // written after the first purge stale forever (the package-install staleness bug).
+    when(resourceResolver.getUserID()).thenReturn("burst-user");
+    baseCacheService.purgeAll(resourceResolver);
+    verify(baseCacheService, times(1)).doPurge(resourceResolver);
+
+    // The deferred purge must fire on its own once the cooldown (1000ms) expires.
+    Thread.sleep(1500);
+    verify(baseCacheService, times(2)).doPurge(resourceResolver);
+    assertTrue(baseCacheService.getLastPurged().getTime() > firstPurgeDate.getTime());
+    assertEquals("burst-user", baseCacheService.getLastPurgedBy());
+  }
+
+  @Test
+  public void testPurgeRequestsDuringCooldownCoalesceIntoOneDeferredPurge()
+          throws CachePurgeException, InterruptedException, LoginException {
+    doReturn(resourceResolver).when(baseCacheService).getServiceResourceResolver();
+    baseCacheService.purgeAll(resourceResolver);
+    verify(baseCacheService, times(1)).doPurge(resourceResolver);
+
+    baseCacheService.purgeAll(resourceResolver);
+    baseCacheService.purgeAll(resourceResolver);
+    baseCacheService.purgeAll(resourceResolver);
+
+    Thread.sleep(1500);
+    // One immediate purge + exactly one coalesced deferred purge for the whole burst.
+    verify(baseCacheService, times(2)).doPurge(resourceResolver);
   }
 
   @Test

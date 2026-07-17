@@ -26,6 +26,9 @@ import io.kestros.commons.osgiserviceutils.services.cache.CacheService;
 import io.kestros.commons.osgiserviceutils.services.cache.ManagedCacheService;
 import java.util.Date;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
@@ -44,10 +47,25 @@ public abstract class BaseCacheService extends BaseServiceResolverService
 
   private static final long serialVersionUID = 1L;
 
+  /**
+   * Single shared daemon thread that runs deferred cache purges. Deferred purge tasks are tiny
+   * (they call the same purge path an event-driven purge uses), so one thread serves every cache
+   * service. Daemon so it never blocks JVM shutdown.
+   */
+  private static final ScheduledExecutorService DEFERRED_PURGE_SCHEDULER
+          = Executors.newSingleThreadScheduledExecutor(runnable -> {
+            Thread thread = new Thread(runnable, "kestros-cache-deferred-purge");
+            thread.setDaemon(true);
+            return thread;
+          });
+
   protected final Logger log = LoggerFactory.getLogger(getClass());
   private boolean isLive = true;
+  private final Object purgeLock = new Object();
   private Date lastPurged;
   private String lastPurgedBy;
+  private boolean pendingDeferredPurge = false;
+  private String pendingDeferredPurgeBy;
 
   protected abstract void doPurge(@Nonnull ResourceResolver resourceResolver) throws
           CachePurgeException;
@@ -84,33 +102,97 @@ public abstract class BaseCacheService extends BaseServiceResolverService
   @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
   @Override
   public void purgeAll(@Nonnull ResourceResolver resourceResolver) throws CachePurgeException {
-    if (isCachePurgeTimeoutExpired()) {
-      try (ResourceResolver serviceResourceResolver = getServiceResourceResolver()) {
-        if (serviceResourceResolver.isLive()) {
-          this.lastPurged = new Date();
-          this.lastPurgedBy = resourceResolver.getUserID();
-          log.info("{}: Clearing all cached data.", getDisplayName().replaceAll("[\r\n]", ""));
-          doPurge(serviceResourceResolver);
-          this.afterCachePurgeComplete(serviceResourceResolver);
-        } else {
-          log.error(
-                  "{}: Failed to clear cached data. Service ResourceResolver was not live or was "
-                          + "null",
-                  getDisplayName().replaceAll("[\r\n]", ""));
-          throw new CachePurgeException(String.format(
-                  "Failed to purge cache %s. Resource Resolver was either null, or already closed.",
-                  getDisplayName()));
+    synchronized (purgeLock) {
+      if (!isCachePurgeTimeoutExpired()) {
+        // A purge request during the cooldown must never be lost — content written after the
+        // last executed purge would otherwise stay stale until an unrelated change (e.g. the
+        // trailing writes of a package install). Coalesce all such requests into one deferred
+        // purge that runs as soon as the cooldown expires.
+        this.pendingDeferredPurgeBy = resourceResolver.getUserID();
+        if (!pendingDeferredPurge) {
+          this.pendingDeferredPurge = true;
+          long delayMs = getRemainingCooldownMillis() + 50;
+          DEFERRED_PURGE_SCHEDULER.schedule(this::runDeferredPurge, delayMs,
+                  TimeUnit.MILLISECONDS);
+          log.debug("{}: Purge requested during cooldown — deferred purge scheduled in {}ms.",
+                  getDisplayName().replaceAll("[\r\n]", ""), delayMs);
         }
-      } catch (LoginException e) {
-        log.error("{}: Failed to clear cached data.", getDisplayName().replaceAll("[\r\n]", ""));
-        throw new CachePurgeException(String.format(
-                "Failed to purge cache %s. %s",
-                getDisplayName(), e.getMessage()), e);
+        return;
       }
-    } else {
-      log.debug("{}: Skipping cache purge, minimum time between purges has not elapsed.",
-                getDisplayName().replaceAll("[\r\n]", ""));
+      // An immediate purge makes any pending deferred purge redundant.
+      this.pendingDeferredPurge = false;
+      this.pendingDeferredPurgeBy = null;
     }
+    executePurge(resourceResolver.getUserID());
+  }
+
+  /**
+   * Opens a service resource resolver and runs {@link #doPurge}. {@code lastPurged}/
+   * {@code lastPurgedBy} are stamped only once the resolver is confirmed live, preserving the
+   * contract that a failed purge leaves them untouched.
+   *
+   * @param purgedBy User ID to record as the purger.
+   * @throws CachePurgeException Failed to purge the cache.
+   */
+  private void executePurge(@Nullable String purgedBy) throws CachePurgeException {
+    try (ResourceResolver serviceResourceResolver = getServiceResourceResolver()) {
+      if (serviceResourceResolver.isLive()) {
+        synchronized (purgeLock) {
+          this.lastPurged = new Date();
+          this.lastPurgedBy = purgedBy;
+        }
+        log.info("{}: Clearing all cached data.", getDisplayName().replaceAll("[\r\n]", ""));
+        doPurge(serviceResourceResolver);
+        this.afterCachePurgeComplete(serviceResourceResolver);
+      } else {
+        log.error(
+                "{}: Failed to clear cached data. Service ResourceResolver was not live or was "
+                        + "null",
+                getDisplayName().replaceAll("[\r\n]", ""));
+        throw new CachePurgeException(String.format(
+                "Failed to purge cache %s. Resource Resolver was either null, or already closed.",
+                getDisplayName()));
+      }
+    } catch (LoginException e) {
+      log.error("{}: Failed to clear cached data.", getDisplayName().replaceAll("[\r\n]", ""));
+      throw new CachePurgeException(String.format(
+              "Failed to purge cache %s. %s",
+              getDisplayName(), e.getMessage()), e);
+    }
+  }
+
+  /**
+   * Runs a purge that was deferred because it was requested during the cooldown window. Failures
+   * are logged rather than thrown — there is no caller to receive them.
+   */
+  private void runDeferredPurge() {
+    String purgedBy;
+    synchronized (purgeLock) {
+      if (!pendingDeferredPurge) {
+        return;
+      }
+      this.pendingDeferredPurge = false;
+      purgedBy = pendingDeferredPurgeBy != null ? pendingDeferredPurgeBy : "deferred-purge";
+      this.pendingDeferredPurgeBy = null;
+    }
+    try {
+      executePurge(purgedBy);
+    } catch (CachePurgeException e) {
+      log.error("{}: Deferred cache purge failed. {}",
+              getDisplayName().replaceAll("[\r\n]", ""), e.getMessage());
+    }
+  }
+
+  private long getRemainingCooldownMillis() {
+    Date purged;
+    synchronized (purgeLock) {
+      purged = this.lastPurged;
+    }
+    if (purged == null) {
+      return 0;
+    }
+    long elapsed = new Date().getTime() - purged.getTime();
+    return Math.max(0, getMinimumTimeBetweenCachePurges() - elapsed);
   }
 
   @Override
