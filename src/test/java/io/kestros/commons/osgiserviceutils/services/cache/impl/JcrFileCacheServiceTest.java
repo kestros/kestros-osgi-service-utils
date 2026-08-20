@@ -138,6 +138,27 @@ public class JcrFileCacheServiceTest {
         jcrFileCacheService.deactivate(context.componentContext());
     }
 
+    /**
+     * A purge requested inside the cooldown is only armed as a deferred purge, so it is still
+     * pending when the bundle stops. Deactivate must drain it rather than drop it, which it can
+     * only do by delegating to {@link BaseCacheService#deactivate}.
+     */
+    @Test
+    public void testDeactivateRunsPurgeArmedDuringCooldown()
+            throws LoginException, CachePurgeException {
+        jcrFileCacheService.activate(context.componentContext());
+        // Hold the service inside its cooldown window for the whole test, so purgeAll can only
+        // defer. Stubbed rather than timed so the test cannot flake on a slow JVM.
+        doReturn(false).when(jcrFileCacheService).isCachePurgeTimeoutExpired();
+
+        jcrFileCacheService.purgeAll(resourceResolver);
+        verify(jcrFileCacheService, never()).doPurge(any());
+
+        jcrFileCacheService.deactivate(context.componentContext());
+
+        verify(jcrFileCacheService, times(1)).doPurge(any());
+    }
+
     @Test
     public void getCacheRootPath() {
         assertEquals("/var/cache/test", jcrFileCacheService.getServiceCacheRootPath());
