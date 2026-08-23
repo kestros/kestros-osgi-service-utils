@@ -297,9 +297,10 @@ public abstract class BaseCacheService extends BaseServiceResolverService
       try {
         executePurge(purgedBy);
       } catch (Exception e) {
+        String message = e.getMessage() != null ? e.getMessage().replaceAll("[\r\n]", "")
+                : e.toString();
         log.warn(getDisplayName().replaceAll("[\r\n]", "")
-                + ": Could not run pending deferred purge during deactivation. "
-                + (e.getMessage() != null ? e.getMessage().replaceAll("[\r\n]", "") : e.toString()));
+                + ": Could not run pending deferred purge during deactivation. " + message);
       }
     }
     if (scheduler != null) {
