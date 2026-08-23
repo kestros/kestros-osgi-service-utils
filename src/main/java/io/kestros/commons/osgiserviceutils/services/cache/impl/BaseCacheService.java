@@ -71,12 +71,12 @@ public abstract class BaseCacheService extends BaseServiceResolverService
     synchronized (purgeLock) {
       if (deferredPurgeScheduler == null || deferredPurgeScheduler.isShutdown()) {
         deferredPurgeScheduler = new ScheduledThreadPoolExecutor(1,
-                (@Nonnull final Runnable runnable) -> {
-                  Thread thread = new Thread(runnable, "kestros-cache-deferred-purge-" + getClass()
-                          .getSimpleName());
-                  thread.setDaemon(true);
-                  return thread;
-                });
+            (@Nonnull final Runnable runnable) -> {
+              Thread thread = new Thread(runnable, "kestros-cache-deferred-purge-"
+                      + getClass().getSimpleName());
+              thread.setDaemon(true);
+              return thread;
+            });
         deferredPurgeScheduler.setKeepAliveTime(30, TimeUnit.SECONDS);
         deferredPurgeScheduler.allowCoreThreadTimeOut(true);
         deferredPurgeScheduler.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
