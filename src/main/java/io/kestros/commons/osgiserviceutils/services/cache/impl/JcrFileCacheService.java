@@ -92,10 +92,16 @@ public abstract class JcrFileCacheService extends BaseCacheService {
   /**
    * Deactivates the service and closes the associated service ResourceResolver.
    *
+   * <p>The {@code purgeAll} above only arms a deferred purge when it lands inside the cooldown
+   * window, so {@code super.deactivate} must run afterwards: it drains that pending purge, shuts
+   * the deferred-purge scheduler down and closes the service ResourceResolver. Without it a purge
+   * requested just before shutdown is silently dropped.
+   *
    * @param componentContext ComponentContext.
    */
   @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
   @Deactivate
+  @Override
   public void deactivate(@Nonnull ComponentContext componentContext) {
     log.info("Deactivating {}.", getDisplayName().replaceAll("[\r\n]", ""));
     try (ResourceResolver resourceResolver = getServiceResourceResolver()) {
@@ -109,6 +115,7 @@ public abstract class JcrFileCacheService extends BaseCacheService {
     } catch (LoginException e) {
       log.error("Unable to close service ResourceResolver.", e);
     }
+    super.deactivate(componentContext);
   }
 
 
