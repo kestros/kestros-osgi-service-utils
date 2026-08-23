@@ -70,19 +70,21 @@ public abstract class BaseCacheService extends BaseServiceResolverService
   private ScheduledThreadPoolExecutor getDeferredPurgeScheduler() {
     synchronized (purgeLock) {
       if (deferredPurgeScheduler == null || deferredPurgeScheduler.isShutdown()) {
-        deferredPurgeScheduler = new ScheduledThreadPoolExecutor(1,
-            (@Nonnull final Runnable runnable) -> {
-              Thread thread = new Thread(runnable, "kestros-cache-deferred-purge-"
-                      + getClass().getSimpleName());
-              thread.setDaemon(true);
-              return thread;
-            });
+        deferredPurgeScheduler = new ScheduledThreadPoolExecutor(1, this::newDeferredPurgeThread);
         deferredPurgeScheduler.setKeepAliveTime(30, TimeUnit.SECONDS);
         deferredPurgeScheduler.allowCoreThreadTimeOut(true);
         deferredPurgeScheduler.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
       }
       return deferredPurgeScheduler;
     }
+  }
+
+  @Nonnull
+  private Thread newDeferredPurgeThread(@Nonnull final Runnable runnable) {
+    Thread thread = new Thread(runnable, "kestros-cache-deferred-purge-" + getClass()
+            .getSimpleName());
+    thread.setDaemon(true);
+    return thread;
   }
 
   protected abstract void doPurge(@Nonnull ResourceResolver resourceResolver) throws
@@ -249,9 +251,8 @@ public abstract class BaseCacheService extends BaseServiceResolverService
         this.deferredPurgeRetried = false;
       }
     } catch (Exception e) {
-      log.error(String.format("%s: Deferred cache purge failed. %s",
-              getDisplayName().replaceAll("[\r\n]", ""),
-              e.getMessage() != null ? e.getMessage().replaceAll("[\r\n]", "") : e.toString()));
+      log.error(getDisplayName().replaceAll("[\r\n]", "") + ": Deferred cache purge failed. "
+              + (e.getMessage() != null ? e.getMessage().replaceAll("[\r\n]", "") : e.toString()));
       synchronized (purgeLock) {
         if (!deferredPurgeRetried) {
           // One bounded retry so a transient failure cannot strand the cache stale; a
@@ -296,9 +297,9 @@ public abstract class BaseCacheService extends BaseServiceResolverService
       try {
         executePurge(purgedBy);
       } catch (Exception e) {
-        log.warn(String.format("%s: Could not run pending deferred purge during deactivation. %s",
-                getDisplayName().replaceAll("[\r\n]", ""),
-                e.getMessage() != null ? e.getMessage().replaceAll("[\r\n]", "") : e.toString()));
+        log.warn(getDisplayName().replaceAll("[\r\n]", "")
+                + ": Could not run pending deferred purge during deactivation. "
+                + (e.getMessage() != null ? e.getMessage().replaceAll("[\r\n]", "") : e.toString()));
       }
     }
     if (scheduler != null) {
