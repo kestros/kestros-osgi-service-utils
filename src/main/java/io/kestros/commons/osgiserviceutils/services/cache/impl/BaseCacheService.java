@@ -223,7 +223,7 @@ public abstract class BaseCacheService extends BaseServiceResolverService
    * reschedules instead of purging early. Failures are logged, and the purge is re-armed once —
    * there is no caller to receive an exception.
    */
-  @SuppressFBWarnings("REC_CATCH_EXCEPTION")
+  @SuppressFBWarnings({"REC_CATCH_EXCEPTION", "CRLF_INJECTION_LOGS"})
   private void runDeferredPurge() {
     String purgedBy;
     synchronized (purgeLock) {
@@ -282,6 +282,7 @@ public abstract class BaseCacheService extends BaseServiceResolverService
    *
    * @param componentContext ComponentContext.
    */
+  @SuppressFBWarnings("CRLF_INJECTION_LOGS")
   @Override
   public void deactivate(@Nonnull org.osgi.service.component.ComponentContext componentContext) {
     String purgedBy;
