@@ -92,10 +92,9 @@ public abstract class JcrFileCacheService extends BaseCacheService {
   /**
    * Deactivates the service and closes the associated service ResourceResolver.
    *
-   * <p>The {@code purgeAll} above only arms a deferred purge when it lands inside the cooldown
-   * window, so {@code super.deactivate} must run afterwards: it drains that pending purge, shuts
-   * the deferred-purge scheduler down and closes the service ResourceResolver. Without it a purge
-   * requested just before shutdown is silently dropped.
+   * <p>With a Sling Scheduler bound, the {@code purgeAll} above only schedules the debounced purge
+   * job, so {@code super.deactivate} must run afterwards: it unschedules that job and runs the
+   * pending purge now. Without it a purge requested just before shutdown is silently dropped.
    *
    * @param componentContext ComponentContext.
    */
