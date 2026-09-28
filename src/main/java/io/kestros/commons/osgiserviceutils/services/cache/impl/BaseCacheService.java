@@ -180,7 +180,7 @@ public abstract class BaseCacheService extends BaseServiceResolverService
     Scheduler scheduler = getScheduler();
     long remainingCooldown = getRemainingCooldownMillis();
     if (scheduler != null && remainingCooldown > 0
-        && schedulePurgeJob(scheduler, remainingCooldown)) {
+            && schedulePurgeJob(scheduler, remainingCooldown)) {
       return;
     }
     this.pendingPurgeBy = null;
