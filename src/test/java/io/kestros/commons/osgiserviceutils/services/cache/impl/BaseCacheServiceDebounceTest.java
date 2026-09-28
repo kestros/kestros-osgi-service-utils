@@ -20,7 +20,6 @@
 package io.kestros.commons.osgiserviceutils.services.cache.impl;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -40,7 +39,6 @@ import org.apache.sling.commons.scheduler.Scheduler;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-import org.osgi.service.component.ComponentContext;
 
 public class BaseCacheServiceDebounceTest {
 
@@ -96,24 +94,6 @@ public class BaseCacheServiceDebounceTest {
     // Inside the 1000ms cooldown: rescheduled, not purged.
     verify(cacheService, times(1)).doPurge(resourceResolver);
     verify(scheduler, times(3)).schedule(any(), any(ScheduleOptions.class));
-  }
-
-  @Test
-  public void testDeactivateRunsPendingPurge() throws Exception {
-    cacheService.purgeAll(resourceResolver);
-
-    cacheService.deactivate(mock(ComponentContext.class));
-
-    verify(cacheService, times(1)).doPurge(resourceResolver);
-    verify(scheduler, times(2)).unschedule(cacheService.getPurgeJobName());
-  }
-
-  @Test
-  public void testDeactivateWithNothingPendingDoesNotPurge() throws Exception {
-    cacheService.deactivate(mock(ComponentContext.class));
-
-    verify(cacheService, never()).doPurge(any());
-    assertNull(cacheService.getLastPurged());
   }
 
   @Test

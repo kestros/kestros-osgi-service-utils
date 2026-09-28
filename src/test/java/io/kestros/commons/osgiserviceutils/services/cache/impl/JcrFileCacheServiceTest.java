@@ -26,6 +26,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -43,6 +44,7 @@ import io.kestros.commons.structuredslingmodels.exceptions.ResourceNotFoundExcep
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -53,6 +55,8 @@ import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
+import org.apache.sling.commons.scheduler.ScheduleOptions;
+import org.apache.sling.commons.scheduler.Scheduler;
 import org.apache.sling.testing.mock.sling.junit.SlingContext;
 import org.junit.Before;
 import org.junit.Rule;
@@ -139,17 +143,21 @@ public class JcrFileCacheServiceTest {
     }
 
     /**
-     * A purge requested inside the cooldown is only armed as a deferred purge, so it is still
-     * pending when the bundle stops. Deactivate must drain it rather than drop it, which it can
-     * only do by delegating to {@link BaseCacheService#deactivate}.
+     * A purge request only schedules the debounced purge job, so it is still pending when the
+     * bundle stops. Deactivate must run it rather than drop it, which it can only do by delegating
+     * to {@link BaseCacheService#deactivate}.
      */
     @Test
-    public void testDeactivateRunsPurgeArmedDuringCooldown()
+    public void testDeactivateRunsPendingScheduledPurge()
             throws LoginException, CachePurgeException {
         jcrFileCacheService.activate(context.componentContext());
-        // Hold the service inside its cooldown window for the whole test, so purgeAll can only
-        // defer. Stubbed rather than timed so the test cannot flake on a slow JVM.
-        doReturn(false).when(jcrFileCacheService).isCachePurgeTimeoutExpired();
+        Scheduler scheduler = mock(Scheduler.class);
+        ScheduleOptions options = mock(ScheduleOptions.class);
+        when(scheduler.AT(any(Date.class))).thenReturn(options);
+        when(options.name(any())).thenReturn(options);
+        when(options.canRunConcurrently(anyBoolean())).thenReturn(options);
+        when(scheduler.schedule(any(), any(ScheduleOptions.class))).thenReturn(true);
+        doReturn(scheduler).when(jcrFileCacheService).getScheduler();
 
         jcrFileCacheService.purgeAll(resourceResolver);
         verify(jcrFileCacheService, never()).doPurge(any());
