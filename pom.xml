@@ -32,7 +32,7 @@
 
   <groupId>io.kestros.commons</groupId>
   <artifactId>kestros-osgi-service-utils</artifactId>
-  <version>0.1.11</version>
+  <version>0.1.12-SNAPSHOT</version>
 
   <packaging>bundle</packaging>
 
@@ -51,6 +51,12 @@
       <groupId>io.kestros.commons</groupId>
       <artifactId>kestros-structured-sling-models</artifactId>
       <version>[0.2.5,0.2.99]</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.sling</groupId>
+      <artifactId>org.apache.sling.commons.scheduler</artifactId>
+      <version>2.7.2</version>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
 
