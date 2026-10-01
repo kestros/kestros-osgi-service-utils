@@ -171,4 +171,50 @@ public class OsgiServiceUtilsTest {
 
   }
 
+  @Test(expected = LoginException.class)
+  public void setOpenServiceResourceResolverWhenResourceResolverFactoryIsNull()
+      throws LoginException {
+    OsgiServiceUtils.getOpenServiceResourceResolver("service", null, null, service);
+  }
+
+  @Test
+  public void getOpenServiceResourceResolverOrNullAndLogExceptions() throws LoginException {
+    when(resourceResolverFactory.getServiceResourceResolver(any())).thenReturn(
+        context.resourceResolver());
+
+    resourceResolver = OsgiServiceUtils.getOpenServiceResourceResolverOrNullAndLogExceptions(
+        "service", null, resourceResolverFactory, service);
+
+    assertNotNull(resourceResolver);
+    assertTrue(resourceResolver.isLive());
+  }
+
+  @Test
+  public void getOpenServiceResourceResolverOrNullAndLogExceptionsWhenLoginException()
+      throws LoginException {
+    when(resourceResolverFactory.getServiceResourceResolver(any())).thenThrow(
+        new LoginException("login failed"));
+
+    assertNull(OsgiServiceUtils.getOpenServiceResourceResolverOrNullAndLogExceptions("service",
+        null, resourceResolverFactory, service));
+  }
+
+  @Test
+  public void getOsgiServiceOfType() {
+    SampleService registered = mock(SampleService.class);
+    context.registerService(SampleService.class, registered);
+
+    assertSame(registered,
+        OsgiServiceUtils.getOsgiServiceOfType(context.componentContext(), SampleService.class));
+  }
+
+  @Test
+  public void getOsgiServiceOfTypeWhenNoneRegistered() {
+    assertNull(
+        OsgiServiceUtils.getOsgiServiceOfType(context.componentContext(), SampleService.class));
+  }
+
+  interface SampleService {
+  }
+
 }
