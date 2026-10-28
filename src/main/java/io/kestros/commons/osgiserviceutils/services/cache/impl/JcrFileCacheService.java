@@ -92,10 +92,15 @@ public abstract class JcrFileCacheService extends BaseCacheService {
   /**
    * Deactivates the service and closes the associated service ResourceResolver.
    *
+   * <p>With a Sling Scheduler bound, the {@code purgeAll} above only schedules the debounced purge
+   * job, so {@code super.deactivate} must run afterwards: it unschedules that job and runs the
+   * pending purge now. Without it a purge requested just before shutdown is silently dropped.
+   *
    * @param componentContext ComponentContext.
    */
   @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
   @Deactivate
+  @Override
   public void deactivate(@Nonnull ComponentContext componentContext) {
     log.info("Deactivating {}.", getDisplayName().replaceAll("[\r\n]", ""));
     try (ResourceResolver resourceResolver = getServiceResourceResolver()) {
@@ -109,6 +114,7 @@ public abstract class JcrFileCacheService extends BaseCacheService {
     } catch (LoginException e) {
       log.error("Unable to close service ResourceResolver.", e);
     }
+    super.deactivate(componentContext);
   }
 
 
