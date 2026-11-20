@@ -24,7 +24,6 @@ import io.kestros.commons.osgiserviceutils.exceptions.CachePurgeException;
 import io.kestros.commons.osgiserviceutils.services.BaseServiceResolverService;
 import io.kestros.commons.osgiserviceutils.services.cache.CacheService;
 import io.kestros.commons.osgiserviceutils.services.eventlisteners.CachePurgeOnResourceChangeEventListener;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -48,7 +47,8 @@ import org.slf4j.LoggerFactory;
  * next bundle's content lands. The held changes are purged once, when the framework has started,
  * Sling's repository startup thread has finished (it installs the initial content of every bundle
  * that started before the repository was up) and no change has arrived for
- * {@link #startupQuietMillis()}. From then on every change purges at once, as before.
+ * {@link #startupQuietMillis()}. From then on every change purges at once, as before. The purge on
+ * activation is not held.
  */
 public abstract class BaseCachePurgeOnResourceChangeEventListener extends BaseServiceResolverService
         implements CachePurgeOnResourceChangeEventListener {
@@ -101,7 +101,8 @@ public abstract class BaseCachePurgeOnResourceChangeEventListener extends BaseSe
     super.activate(ctx);
     this.bundleContext = ctx != null ? ctx.getBundleContext() : null;
     if (this.purgeOnActivation()) {
-      this.onChange(Collections.EMPTY_LIST);
+      // At once, as before: the caches this builds serve pages while the server keeps starting.
+      purgeNow();
     }
   }
 
