@@ -43,11 +43,12 @@ import org.slf4j.LoggerFactory;
 /**
  * Baseline logic for clearing cache based on a ResourceChange Event.
  *
- * <p>While the server starts, changes are held: the framework is still starting and bundles are
- * still installing their initial content, so every purge (and the rebuild some caches run as part
- * of it) would be redone as the next bundle's content lands. The held changes are purged once,
- * when the framework has started and no change has arrived for {@link #startupQuietMillis()}.
- * From then on every change purges at once, as before.
+ * <p>While the server starts, changes are held: bundles are still installing their initial
+ * content, so every purge (and the rebuild some caches run as part of it) would be redone as the
+ * next bundle's content lands. The held changes are purged once, when the framework has started,
+ * Sling's repository startup thread has finished (it installs the initial content of every bundle
+ * that started before the repository was up) and no change has arrived for
+ * {@link #startupQuietMillis()}. From then on every change purges at once, as before.
  */
 public abstract class BaseCachePurgeOnResourceChangeEventListener extends BaseServiceResolverService
         implements CachePurgeOnResourceChangeEventListener {
@@ -58,7 +59,13 @@ public abstract class BaseCachePurgeOnResourceChangeEventListener extends BaseSe
    * turns the startup hold off.
    */
   static final long STARTUP_QUIET_MILLIS = Long.getLong("kestros.cachePurge.startupQuietMillis",
-          10000L);
+          5000L);
+
+  /**
+   * The name Sling gives the thread that starts the repository and, by registering it, runs the
+   * content loader for every bundle already started (AbstractSlingRepositoryManager).
+   */
+  static final String REPOSITORY_STARTUP_THREAD = "Apache Sling Repository Startup Thread";
 
   /** One small daemon thread for every listener's startup purge; it ends when idle. */
   private static final ScheduledThreadPoolExecutor STARTUP_PURGES = startupPurges();
@@ -136,7 +143,7 @@ public abstract class BaseCachePurgeOnResourceChangeEventListener extends BaseSe
       startupPurge = null;
       final long quietFor = System.currentTimeMillis() - lastHeldChange;
       final long quiet = startupQuietMillis();
-      if (!frameworkStarted() || quietFor < quiet) {
+      if (!frameworkStarted() || repositoryStarting() || quietFor < quiet) {
         final long wait = Math.max(Math.min(1000L, quiet), quiet - quietFor);
         startupPurge = STARTUP_PURGES.schedule(this::startupPurgeIfQuiet, wait,
                 TimeUnit.MILLISECONDS);
@@ -163,6 +170,20 @@ public abstract class BaseCachePurgeOnResourceChangeEventListener extends BaseSe
       // This bundle's context is no longer valid: the purge is moot.
       return true;
     }
+  }
+
+  /**
+   * Whether Sling is still starting the repository, and with it loading bundles' initial content.
+   *
+   * @return true while the repository startup thread runs.
+   */
+  protected boolean repositoryStarting() {
+    for (final Thread thread : Thread.getAllStackTraces().keySet()) {
+      if (thread.isAlive() && thread.getName().startsWith(REPOSITORY_STARTUP_THREAD)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private static ScheduledThreadPoolExecutor startupPurges() {

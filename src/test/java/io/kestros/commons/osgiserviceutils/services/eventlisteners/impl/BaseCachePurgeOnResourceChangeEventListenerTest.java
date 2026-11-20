@@ -231,6 +231,31 @@ public class BaseCachePurgeOnResourceChangeEventListenerTest {
     verify(cacheService, timeout(3000).times(1)).purgeAll(serviceResourceResolver);
   }
 
+  @Test
+  public void testStartupHoldWaitsForTheRepositoryStartupThread() throws Exception {
+    final Bundle system = mock(Bundle.class);
+    when(system.getState()).thenReturn(Bundle.ACTIVE);
+    final java.util.concurrent.CountDownLatch release = new java.util.concurrent.CountDownLatch(1);
+    final Thread startup = new Thread(() -> {
+      try {
+        release.await();
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      }
+    }, "Apache Sling Repository Startup Thread #1");
+    startup.start();
+    try {
+      eventListener = startingListener(system, 100L);
+      eventListener.onChange(new ArrayList<>());
+      Thread.sleep(600);
+      verify(cacheService, never()).purgeAll(any());
+    } finally {
+      release.countDown();
+      startup.join();
+    }
+    verify(cacheService, timeout(3000).times(1)).purgeAll(serviceResourceResolver);
+  }
+
   private SampleCachePurgeOnResourceChangeEventListener startingListener(final Bundle system,
       final long quietMillis) throws Exception {
     final SampleCachePurgeOnResourceChangeEventListener listener =
