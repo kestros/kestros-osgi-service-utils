@@ -26,10 +26,15 @@ import io.kestros.commons.osgiserviceutils.services.cache.CacheService;
 import io.kestros.commons.osgiserviceutils.services.eventlisteners.CachePurgeOnResourceChangeEventListener;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.Nonnull;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.observation.ResourceChange;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.slf4j.Logger;
@@ -37,13 +42,47 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Baseline logic for clearing cache based on a ResourceChange Event.
+ *
+ * <p>While the server starts, changes are held: the framework is still starting and bundles are
+ * still installing their initial content, so every purge (and the rebuild some caches run as part
+ * of it) would be redone as the next bundle's content lands. The held changes are purged once,
+ * when the framework has started and no change has arrived for {@link #startupQuietMillis()}.
+ * From then on every change purges at once, as before.
  */
 public abstract class BaseCachePurgeOnResourceChangeEventListener extends BaseServiceResolverService
         implements CachePurgeOnResourceChangeEventListener {
 
+  /**
+   * How long no change may arrive, after the framework has started, before the changes held
+   * during startup are purged. System property {@code kestros.cachePurge.startupQuietMillis}; 0
+   * turns the startup hold off.
+   */
+  static final long STARTUP_QUIET_MILLIS = Long.getLong("kestros.cachePurge.startupQuietMillis",
+          10000L);
+
+  /** One small daemon thread for every listener's startup purge; it ends when idle. */
+  private static final ScheduledThreadPoolExecutor STARTUP_PURGES = startupPurges();
+
   protected final Logger log = LoggerFactory.getLogger(getClass());
 
+  private final Object startupLock = new Object();
+  private Boolean started;
+  private long lastHeldChange;
+  private int heldChanges;
+  private ScheduledFuture<?> startupPurge;
+  private BundleContext bundleContext;
+
   protected abstract boolean purgeOnActivation();
+
+  /**
+   * How long no change may arrive, after the framework has started, before the changes held
+   * during startup are purged; 0 purges every change at once, also during startup.
+   *
+   * @return milliseconds.
+   */
+  protected long startupQuietMillis() {
+    return STARTUP_QUIET_MILLIS;
+  }
 
   /**
    * Activates event lister service. Opens ResourceResolver for service user.
@@ -53,14 +92,93 @@ public abstract class BaseCachePurgeOnResourceChangeEventListener extends BaseSe
   @Activate
   public void activate(@Nonnull final ComponentContext ctx) {
     super.activate(ctx);
+    this.bundleContext = ctx != null ? ctx.getBundleContext() : null;
     if (this.purgeOnActivation()) {
       this.onChange(Collections.EMPTY_LIST);
     }
   }
 
-  @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
   @Override
   public void onChange(@Nonnull final List<ResourceChange> list) {
+    if (holdDuringStartup()) {
+      return;
+    }
+    purgeNow();
+  }
+
+  /**
+   * While the server starts, records the change and (re)schedules the one purge for after
+   * startup.
+   *
+   * @return true if the change was held.
+   */
+  private boolean holdDuringStartup() {
+    synchronized (startupLock) {
+      if (started == null) {
+        started = startupQuietMillis() <= 0 || bundleContext == null;
+      }
+      if (started) {
+        return false;
+      }
+      lastHeldChange = System.currentTimeMillis();
+      heldChanges++;
+      if (startupPurge == null) {
+        startupPurge = STARTUP_PURGES.schedule(this::startupPurgeIfQuiet, startupQuietMillis(),
+                TimeUnit.MILLISECONDS);
+      }
+      return true;
+    }
+  }
+
+  private void startupPurgeIfQuiet() {
+    final int held;
+    synchronized (startupLock) {
+      startupPurge = null;
+      final long quietFor = System.currentTimeMillis() - lastHeldChange;
+      final long quiet = startupQuietMillis();
+      if (!frameworkStarted() || quietFor < quiet) {
+        final long wait = Math.max(Math.min(1000L, quiet), quiet - quietFor);
+        startupPurge = STARTUP_PURGES.schedule(this::startupPurgeIfQuiet, wait,
+                TimeUnit.MILLISECONDS);
+        return;
+      }
+      started = true;
+      held = heldChanges;
+    }
+    log.info("{}: startup finished, purging once for {} changes held during startup.",
+            getDisplayName().replaceAll("[\r\n]", ""), held);
+    try {
+      purgeNow();
+    } catch (RuntimeException e) {
+      log.warn("{}: startup purge failed: {}", getDisplayName().replaceAll("[\r\n]", ""),
+              String.valueOf(e.getMessage()).replaceAll("[\r\n]", ""));
+    }
+  }
+
+  private boolean frameworkStarted() {
+    try {
+      final Bundle system = bundleContext.getBundle(0);
+      return system == null || system.getState() == Bundle.ACTIVE;
+    } catch (IllegalStateException e) {
+      // This bundle's context is no longer valid: the purge is moot.
+      return true;
+    }
+  }
+
+  private static ScheduledThreadPoolExecutor startupPurges() {
+    final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1, r -> {
+      final Thread thread = new Thread(r, "kestros-startup-cache-purge");
+      thread.setDaemon(true);
+      return thread;
+    });
+    executor.setKeepAliveTime(30, TimeUnit.SECONDS);
+    executor.allowCoreThreadTimeOut(true);
+    executor.setRemoveOnCancelPolicy(true);
+    return executor;
+  }
+
+  @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
+  private void purgeNow() {
     try (ResourceResolver resourceResolver = getServiceResourceResolver()) {
       for (final CacheService cacheService : getCacheServices()) {
         try {

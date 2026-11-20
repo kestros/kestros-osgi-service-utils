@@ -18,6 +18,10 @@
  */
 
 package io.kestros.commons.osgiserviceutils.services.eventlisteners.impl;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.service.component.ComponentContext;
+import static org.mockito.Mockito.timeout;
 
 import io.kestros.commons.osgiserviceutils.exceptions.CachePurgeException;
 import io.kestros.commons.osgiserviceutils.services.cache.CacheService;
@@ -134,6 +138,7 @@ public class BaseCachePurgeOnResourceChangeEventListenerTest {
   public void testOnChange() throws Exception {
     eventListener = spy(new SampleCachePurgeOnResourceChangeEventListener());
     doReturn(resourceResolverFactory).when(eventListener).getResourceResolverFactory();
+    doReturn(0L).when(eventListener).startupQuietMillis();
     cacheServices.add(cacheService);
     doReturn(cacheServices).when(eventListener).getCacheServices();
 
@@ -176,4 +181,69 @@ public class BaseCachePurgeOnResourceChangeEventListenerTest {
     verify(cacheService, times(1)).purgeAll(any());
   }
 
+
+  @Test
+  public void testChangesDuringStartupArePurgedOnceAfterTheQuietPeriod() throws Exception {
+    final Bundle system = mock(Bundle.class);
+    when(system.getState()).thenReturn(Bundle.STARTING);
+    eventListener = startingListener(system, 200L);
+
+    for (int i = 0; i < 5; i++) {
+      eventListener.onChange(new ArrayList<>());
+    }
+    verify(cacheService, never()).purgeAll(any());
+
+    when(system.getState()).thenReturn(Bundle.ACTIVE);
+    verify(cacheService, timeout(3000).times(1)).purgeAll(serviceResourceResolver);
+    Thread.sleep(500);
+    verify(cacheService, times(1)).purgeAll(serviceResourceResolver);
+
+    // Startup is over: a change purges at once, as before.
+    eventListener.onChange(new ArrayList<>());
+    verify(cacheService, times(2)).purgeAll(serviceResourceResolver);
+  }
+
+  @Test
+  public void testStartupHoldWaitsForTheFrameworkToStart() throws Exception {
+    final Bundle system = mock(Bundle.class);
+    when(system.getState()).thenReturn(Bundle.STARTING);
+    eventListener = startingListener(system, 100L);
+
+    eventListener.onChange(new ArrayList<>());
+    Thread.sleep(600);
+    verify(cacheService, never()).purgeAll(any());
+
+    when(system.getState()).thenReturn(Bundle.ACTIVE);
+    verify(cacheService, timeout(3000).times(1)).purgeAll(serviceResourceResolver);
+  }
+
+  @Test
+  public void testStartupHoldWaitsUntilChangesStop() throws Exception {
+    final Bundle system = mock(Bundle.class);
+    when(system.getState()).thenReturn(Bundle.ACTIVE);
+    eventListener = startingListener(system, 300L);
+
+    for (int i = 0; i < 6; i++) {
+      eventListener.onChange(new ArrayList<>());
+      Thread.sleep(100);
+    }
+    verify(cacheService, never()).purgeAll(any());
+    verify(cacheService, timeout(3000).times(1)).purgeAll(serviceResourceResolver);
+  }
+
+  private SampleCachePurgeOnResourceChangeEventListener startingListener(final Bundle system,
+      final long quietMillis) throws Exception {
+    final SampleCachePurgeOnResourceChangeEventListener listener =
+        spy(new SampleCachePurgeOnResourceChangeEventListener());
+    doReturn(resourceResolverFactory).when(listener).getResourceResolverFactory();
+    doReturn(quietMillis).when(listener).startupQuietMillis();
+    cacheServices.add(cacheService);
+    doReturn(cacheServices).when(listener).getCacheServices();
+    final BundleContext bundleContext = mock(BundleContext.class);
+    when(bundleContext.getBundle(0)).thenReturn(system);
+    final ComponentContext componentContext = mock(ComponentContext.class);
+    when(componentContext.getBundleContext()).thenReturn(bundleContext);
+    listener.activate(componentContext);
+    return listener;
+  }
 }
